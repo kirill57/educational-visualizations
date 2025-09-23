@@ -1,351 +1,355 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Lorentz Attractor (Embed)</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lorentz Attractor 3D Visualization</title>
     <style>
-      /* Minimal styling for embed version */
-      body {
-        margin: 0;
-        overflow: hidden;
-        background-color: #000;
-        color: white;
-        font-family: "Inter", sans-serif;
-      }
-      canvas {
-        display: block;
-      }
-      #controls {
-        position: absolute;
-        bottom: 20px;
-        left: 20px;
-        z-index: 100;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-      }
-      .speed-control-container {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        background-color: rgba(0, 0, 0, 0.5);
-        padding: 5px;
-        border-radius: 8px;
-        border: 1px solid white;
-      }
-      #speedDisplay {
-        font-size: 0.9em;
-        min-width: 50px;
-        text-align: center;
-        padding: 0 5px;
-      }
-      button {
-        padding: 8px 14px;
-        font-size: 1em;
-        background-color: rgba(0, 0, 0, 0.5);
-        color: white;
-        border: 1px solid white;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background-color 0.3s, transform 0.1s;
-        font-family: "Inter", sans-serif;
-      }
-      button:hover {
-        background-color: rgba(255, 255, 255, 0.2);
-      }
-      button:active {
-        transform: scale(0.95);
-      }
-      .speed-control-container button {
-        background: none;
-        border: none;
-        font-size: 1.2em;
-        padding: 0 10px;
-        line-height: 1;
-      }
-      button.active {
-        background-color: rgba(255, 255, 255, 0.4);
-        box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-      }
-    </style>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
-    <script type="importmap">
-      {
-        "imports": {
-          "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
-          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000000;
+            color: white;
+            font-family: 'Inter', sans-serif;
         }
-      }
-    </script>
-  </head>
-  <body>
-    <!-- Controls for interactivity -->
-    <div id="controls">
-      <button id="startStopBtn">Pause</button>
-      <div class="speed-control-container">
-        <button id="slowerBtn" title="Slower">-</button>
-        <span id="speedDisplay">1x</span>
-        <button id="fasterBtn" title="Faster">+</button>
-      </div>
-      <button id="reverseBtn">Reverse</button>
-      <button id="resetBtn">Reset</button>
+        canvas {
+            display: block;
+        }
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            text-align: center;
+            pointer-events: none;
+        }
+        h1 {
+            margin: 0;
+            font-size: 1.5em;
+            font-weight: 500;
+        }
+        p {
+            margin: 5px 0 0;
+            font-size: 0.9em;
+        }
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .speed-control-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 5px;
+            border-radius: 8px;
+            border: 1px solid white;
+        }
+        #speedDisplay {
+            font-size: 0.9em;
+            min-width: 50px;
+            text-align: center;
+            padding: 0 5px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: 1px solid white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+            font-family: 'Inter', sans-serif;
+        }
+        button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        .speed-control-container button {
+            background: none;
+            border: none;
+            font-size: 1.2em;
+            padding: 0 10px;
+            line-height: 1;
+        }
+        button.active {
+            background-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="info">
+        <h1>Lorentz Attractor</h1>
+        <p>Drag to rotate, scroll to zoom, right-click to pan.</p>
     </div>
 
-    <script type="module">
-      import * as THREE from "three";
-      import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+    <div id="controls">
+        <button id="startStopBtn">Start</button>
+        <div class="speed-control-container">
+            <button id="slowerBtn" title="Slower">-</button>
+            <span id="speedDisplay">1x</span>
+            <button id="fasterBtn" title="Faster">+</button>
+        </div>
+        <button id="reverseBtn">Reverse</button>
+        <button id="resetBtn">Reset</button>
+    </div>
 
-      // --- Animation State ---
-      let isAnimating = true;
-      let timeDirection = 1; // 1 for forward, -1 for backward
-      const speedSettings = [0.1, 0.25, 0.5, 0.75, 1, 2, 4, 8, 16, 32];
-      let currentSpeedIndex = 4; // Default to 1x speed (the 5th element in the array)
-      let frameCounter = 0; // For handling speeds < 1x
-
-      // --- Basic Setup ---
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(
-        75,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        1000
-      );
-      const renderer = new THREE.WebGLRenderer({ antialias: true });
-
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      document.body.appendChild(renderer.domElement);
-
-      // --- Controls ---
-      const controls = new OrbitControls(camera, renderer.domElement);
-      controls.enableDamping = true;
-      controls.dampingFactor = 0.05;
-      controls.screenSpacePanning = false;
-      controls.minDistance = 1;
-      controls.maxDistance = 200;
-      controls.autoRotate = true;
-      controls.autoRotateSpeed = 0.5;
-
-      // --- Lighting ---
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-      scene.add(ambientLight);
-      const pointLight = new THREE.PointLight(0xffffff, 1);
-      scene.add(pointLight);
-
-      // Set initial camera position
-      camera.position.set(0, 10, 60);
-      camera.lookAt(scene.position);
-
-      // --- Lorentz Attractor Parameters ---
-      const sigma = 10;
-      const rho = 28;
-      const beta = 8.0 / 3.0;
-      const dt = 0.01; // Time step for simulation - constant
-
-      // --- Trajectory Class ---
-      // Manages a single trajectory, represented by a trail of spheres.
-      class Trajectory {
-        constructor(initialPos, baseHue, trailLength = 800, historyLength = 5000) {
-          this.initialPosition = initialPos.clone(); // Store original start point
-          this.position = initialPos.clone();
-          this.baseHue = baseHue;
-          this.trailLength = trailLength;
-          this.maxHistory = historyLength;
-
-          this.history = [this.initialPosition.clone()];
-          this.historyIndex = 0;
-
-          this.spheres = [];
-          this.currentIndex = 0;
-
-          // Create a pool of sphere meshes to reuse. More efficient than creating/destroying.
-          const sphereGeometry = new THREE.SphereGeometry(0.2, 8, 8);
-          for (let i = 0; i < this.trailLength; i++) {
-            const material = new THREE.MeshStandardMaterial({
-              color: 0xffffff,
-              emissive: 0x000000,
-              metalness: 0.1,
-              roughness: 0.5,
-            });
-            const sphere = new THREE.Mesh(sphereGeometry, material);
-            sphere.scale.set(0, 0, 0); // Initially invisible
-            this.spheres.push(sphere);
-            scene.add(sphere);
-          }
-        }
-
-        // Reset the trajectory to its initial state
-        reset() {
-          this.position.copy(this.initialPosition);
-          this.history = [this.initialPosition.clone()];
-          this.historyIndex = 0;
-          this.currentIndex = 0;
-          for (const sphere of this.spheres) {
-            sphere.scale.set(0, 0, 0);
-          }
-        }
-
-        // Update function called every frame
-        update(direction = 1) {
-          // Part 1: Update the history and current position
-          if (direction === 1) {
-            if (this.historyIndex >= this.history.length - 1) {
-              // If we're at the end of known history, calculate the next point
-              const dx = sigma * (this.position.y - this.position.x);
-              const dy = this.position.x * (rho - this.position.z) - this.position.y;
-              const dz = this.position.x * this.position.y - beta * this.position.z;
-
-              this.position.x += dx * dt;
-              this.position.y += dy * dt;
-              this.position.z += dz * dt;
-
-              this.history.push(this.position.clone());
-              this.historyIndex++;
-
-              // Trim history if it gets too long
-              if (this.history.length > this.maxHistory) {
-                this.history.shift();
-                this.historyIndex--;
-              }
-            } else {
-              // Move forward through recorded history
-              this.historyIndex++;
-              this.position.copy(this.history[this.historyIndex]);
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"
             }
-          } else {
-            // Moving backward
-            if (this.historyIndex > 0) {
-              this.historyIndex--;
-              this.position.copy(this.history[this.historyIndex]);
-            }
-          }
-
-          // Part 2: Update the spheres based on history
-          this.currentIndex = (this.currentIndex + 1) % this.trailLength;
-          for (let i = 0; i < this.trailLength; i++) {
-            const spherePoolIndex = (this.currentIndex - i + this.trailLength) % this.trailLength;
-            const sphere = this.spheres[spherePoolIndex];
-            const historyLookupIndex = this.historyIndex - i;
-
-            if (historyLookupIndex >= 0 && historyLookupIndex < this.history.length) {
-              sphere.position.copy(this.history[historyLookupIndex]);
-
-              const age = i / this.trailLength;
-              const scale = (1 - age) * 0.8;
-              sphere.scale.set(scale, scale, scale);
-
-              const lightness = 0.3 + (1 - age) * 0.7;
-              const saturation = 0.8 + (1 - age) * 0.2;
-              const hue = this.baseHue + age * 0.1;
-
-              sphere.material.color.setHSL(hue, saturation, lightness);
-              sphere.material.emissive.setHSL(hue, saturation, lightness * 0.4);
-            } else {
-              sphere.scale.set(0, 0, 0);
-            }
-          }
         }
-      }
-
-      // --- Create Trajectories ---
-      const trajectories = [
-        new Trajectory(new THREE.Vector3(0.1, 0, 0), 0.55), // Blue/Cyan
-        new Trajectory(new THREE.Vector3(0.11, 0, 0), 0.0), // Red/Orange
-        new Trajectory(new THREE.Vector3(0.12, 0, 0), 0.3), // Green
-      ];
-
-      // Center the whole attractor visually
-      const group = new THREE.Group();
-      group.position.y = -15;
-      scene.add(group);
-      trajectories.forEach((t) => t.spheres.forEach((s) => group.add(s)));
-
-      // --- UI Controls ---
-      const startStopBtn = document.getElementById("startStopBtn");
-      const slowerBtn = document.getElementById("slowerBtn");
-      const fasterBtn = document.getElementById("fasterBtn");
-      const speedDisplay = document.getElementById("speedDisplay");
-      const resetBtn = document.getElementById("resetBtn");
-      const reverseBtn = document.getElementById("reverseBtn");
-
-      function updateSpeedDisplay() {
-        speedDisplay.textContent = `${speedSettings[currentSpeedIndex]}x`;
-      }
-
-      startStopBtn.addEventListener("click", () => {
-        isAnimating = !isAnimating;
-        startStopBtn.textContent = isAnimating ? "Pause" : "Resume";
-        controls.autoRotate = isAnimating;
-      });
-
-      slowerBtn.addEventListener("click", () => {
-        currentSpeedIndex = Math.max(0, currentSpeedIndex - 1);
-        updateSpeedDisplay();
-      });
-
-      fasterBtn.addEventListener("click", () => {
-        currentSpeedIndex = Math.min(speedSettings.length - 1, currentSpeedIndex + 1);
-        updateSpeedDisplay();
-      });
-
-      reverseBtn.addEventListener("click", () => {
-        timeDirection *= -1;
-        reverseBtn.textContent = timeDirection === 1 ? "Reverse" : "Forward";
-      });
-
-      resetBtn.addEventListener("click", () => {
-        trajectories.forEach((t) => t.reset());
-        currentSpeedIndex = 4;
-        updateSpeedDisplay();
-        timeDirection = 1;
-        reverseBtn.textContent = "Reverse";
-        if (!isAnimating) {
-          isAnimating = true;
-          startStopBtn.textContent = "Pause";
-          controls.autoRotate = true;
-        }
-      });
-
-      // --- Animation Loop ---
-      function animate() {
-        requestAnimationFrame(animate);
-        if (isAnimating) {
-          const speed = speedSettings[currentSpeedIndex];
-          if (speed >= 1) {
-            for (let i = 0; i < speed; i++) {
-              trajectories.forEach((t) => t.update(timeDirection));
-            }
-          } else {
-            frameCounter++;
-            if (frameCounter >= 1 / speed) {
-              frameCounter = 0;
-              trajectories.forEach((t) => t.update(timeDirection));
-            }
-          }
-          if (trajectories.length > 0) {
-            pointLight.position
-              .copy(trajectories[0].position)
-              .add(group.position);
-          }
-        }
-        controls.update();
-        renderer.render(scene, camera);
-      }
-
-      // --- Resize Handler ---
-      window.addEventListener("resize", () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-      });
-
-      updateSpeedDisplay();
-      animate();
     </script>
-  </body>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // --- Animation State ---
+        let isAnimating = false; // Start static
+        let timeDirection = 1; // 1 for forward, -1 for backward
+        const speedSettings = [0.1, 0.25, 0.5, 0.75, 1, 2, 4, 8, 16, 32];
+        let currentSpeedIndex = 4; // Default to 1x speed
+        let frameCounter = 0;
+
+        // --- Basic Setup ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // --- Controls ---
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.screenSpacePanning = false;
+        controls.minDistance = 1;
+        controls.maxDistance = 200;
+        controls.autoRotate = false; // No auto-rotate until started
+        controls.autoRotateSpeed = 0.5;
+
+        // --- Lighting ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        const pointLight = new THREE.PointLight(0xffffff, 1);
+        scene.add(pointLight);
+
+        // Set initial camera position
+        camera.position.set(0, 10, 60);
+        camera.lookAt(scene.position);
+
+        // --- Lorentz Attractor Parameters ---
+        const sigma = 10;
+        const rho = 28;
+        const beta = 8.0 / 3.0;
+        const dt = 0.01;
+
+        // --- Trajectory Class ---
+        class Trajectory {
+            constructor(initialPos, baseHue, trailLength = 800, historyLength = 5000) {
+                this.initialPosition = initialPos.clone();
+                this.position = initialPos.clone();
+                this.baseHue = baseHue;
+                this.trailLength = trailLength;
+                this.maxHistory = historyLength;
+                
+                this.history = [this.initialPosition.clone()];
+                this.historyIndex = 0;
+                this.spheres = [];
+                this.currentIndex = 0;
+
+                const sphereGeometry = new THREE.SphereGeometry(0.2, 8, 8);
+                for (let i = 0; i < this.trailLength; i++) {
+                    const material = new THREE.MeshStandardMaterial({ 
+                        color: 0xffffff, 
+                        emissive: 0x000000,
+                        metalness: 0.1,
+                        roughness: 0.5,
+                    });
+                    const sphere = new THREE.Mesh(sphereGeometry, material);
+                    sphere.scale.set(0, 0, 0);
+                    this.spheres.push(sphere);
+                    scene.add(sphere);
+                }
+            }
+
+            reset() {
+                this.position.copy(this.initialPosition);
+                this.history = [this.initialPosition.clone()];
+                this.historyIndex = 0;
+                this.currentIndex = 0;
+                for (const sphere of this.spheres) {
+                    sphere.scale.set(0, 0, 0);
+                }
+            }
+
+            update(direction = 1) {
+                if (direction === 1) {
+                    if (this.historyIndex >= this.history.length - 1) {
+                        const dx = sigma * (this.position.y - this.position.x);
+                        const dy = this.position.x * (rho - this.position.z) - this.position.y;
+                        const dz = this.position.x * this.position.y - beta * this.position.z;
+
+                        this.position.x += dx * dt;
+                        this.position.y += dy * dt;
+                        this.position.z += dz * dt;
+
+                        this.history.push(this.position.clone());
+                        this.historyIndex++;
+                        
+                        if (this.history.length > this.maxHistory) {
+                            this.history.shift();
+                            this.historyIndex--; 
+                        }
+                    } else {
+                        this.historyIndex++;
+                        this.position.copy(this.history[this.historyIndex]);
+                    }
+                } else {
+                    if (this.historyIndex > 0) {
+                        this.historyIndex--;
+                        this.position.copy(this.history[this.historyIndex]);
+                    }
+                }
+
+                this.currentIndex = (this.currentIndex + 1) % this.trailLength;
+                
+                for (let i = 0; i < this.trailLength; i++) {
+                    const spherePoolIndex = (this.currentIndex - i + this.trailLength) % this.trailLength;
+                    const sphere = this.spheres[spherePoolIndex];
+                    const historyLookupIndex = this.historyIndex - i;
+
+                    if (historyLookupIndex >= 0 && historyLookupIndex < this.history.length) {
+                        sphere.position.copy(this.history[historyLookupIndex]);
+                        
+                        const age = i / this.trailLength;
+                        const scale = (1 - age) * 0.8;
+                        sphere.scale.set(scale, scale, scale);
+
+                        const lightness = 0.3 + (1 - age) * 0.7;
+                        const saturation = 0.8 + (1 - age) * 0.2;
+                        const hue = this.baseHue + age * 0.1;
+                        
+                        sphere.material.color.setHSL(hue, saturation, lightness);
+                        sphere.material.emissive.setHSL(hue, saturation, lightness * 0.4);
+                    } else {
+                        sphere.scale.set(0, 0, 0);
+                    }
+                }
+            }
+        }
+
+        // --- Create Trajectories ---
+        const trajectories = [
+            new Trajectory(new THREE.Vector3(0.1, 0, 0), 0.55),
+            new Trajectory(new THREE.Vector3(0.11, 0, 0), 0.0),
+            new Trajectory(new THREE.Vector3(0.12, 0, 0), 0.3),
+        ];
+        
+        const group = new THREE.Group();
+        group.position.y = -15;
+        scene.add(group);
+        trajectories.forEach(t => t.spheres.forEach(s => group.add(s)));
+
+        // --- UI Controls ---
+        const startStopBtn = document.getElementById('startStopBtn');
+        const slowerBtn = document.getElementById('slowerBtn');
+        const fasterBtn = document.getElementById('fasterBtn');
+        const speedDisplay = document.getElementById('speedDisplay');
+        const resetBtn = document.getElementById('resetBtn');
+        const reverseBtn = document.getElementById('reverseBtn');
+        
+        function updateSpeedDisplay() {
+            speedDisplay.textContent = `${speedSettings[currentSpeedIndex]}x`;
+        }
+
+        startStopBtn.addEventListener('click', () => {
+            isAnimating = !isAnimating;
+            startStopBtn.textContent = isAnimating ? 'Stop' : 'Start';
+            controls.autoRotate = isAnimating;
+        });
+
+        slowerBtn.addEventListener('click', () => {
+            currentSpeedIndex = Math.max(0, currentSpeedIndex - 1);
+            updateSpeedDisplay();
+        });
+
+        fasterBtn.addEventListener('click', () => {
+            currentSpeedIndex = Math.min(speedSettings.length - 1, currentSpeedIndex + 1);
+            updateSpeedDisplay();
+        });
+        
+        reverseBtn.addEventListener('click', () => {
+            timeDirection *= -1;
+            reverseBtn.textContent = timeDirection === 1 ? 'Reverse' : 'Forward';
+        });
+
+        resetBtn.addEventListener('click', () => {
+            trajectories.forEach(t => t.reset());
+            currentSpeedIndex = 4;
+            updateSpeedDisplay();
+            timeDirection = 1;
+            reverseBtn.textContent = 'Reverse';
+
+            isAnimating = false;
+            startStopBtn.textContent = 'Start';
+            controls.autoRotate = false;
+        });
+
+        // --- Animation Loop ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (isAnimating) {
+                const speed = speedSettings[currentSpeedIndex];
+
+                if (speed >= 1) {
+                    for (let i = 0; i < speed; i++) {
+                        trajectories.forEach(t => t.update(timeDirection));
+                    }
+                } else {
+                    frameCounter++;
+                    if (frameCounter >= 1 / speed) {
+                        frameCounter = 0;
+                        trajectories.forEach(t => t.update(timeDirection));
+                    }
+                }
+                
+                if (trajectories.length > 0) {
+                     pointLight.position.copy(trajectories[0].position).add(group.position);
+                }
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
 </html>
