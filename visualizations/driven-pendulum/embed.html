@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Driven Pendulum Phase Portrait</title>
+    <style>
+        :root { --panel: rgba(31,41,55,.35); }
+        body{font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;margin:0;background:#111827;color:#f3f4f6;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow:hidden}
+        #wrap{position:relative;display:inline-block;box-shadow:0 0 20px rgba(0,191,255,.25);border:1px solid #374151;border-radius:.5rem}
+        canvas{background:#000;cursor:grab;display:block;border-radius:.5rem}
+        canvas:active{cursor:grabbing}
+        .controls{position:absolute;left:50%;bottom:.5rem;transform:translateX(-50%);display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;justify-content:center;background:var(--panel);backdrop-filter:blur(4px);padding:.25rem .5rem;border-radius:.5rem;pointer-events:none; max-width: 95%;}
+        .controls>*{pointer-events:auto}
+        .btn{background:#374151;color:#f3f4f6;padding:.25rem .5rem;border:0;border-radius:.375rem;font-weight:600;font-size:.8rem;cursor:pointer;}
+        .btn:hover{background:#4b5563}
+        .range{width:80px;height:6px;background:#4b5563;border-radius:3px;outline:0;-webkit-appearance:none;appearance:none}
+        .range::-webkit-slider-thumb{width:14px;height:14px;background:#60a5fa;border-radius:50%;box-shadow:0 0 4px #60a5fa;-webkit-appearance:none;appearance:none}
+        .range::-moz-range-thumb{width:14px;height:14px;background:#60a5fa;border-radius:50%;box-shadow:0 0 4px #60a5fa}
+        .title{margin:1rem 0;text-align:center}
+        .title h1{font-size:2rem;font-weight:800;letter-spacing:-.02em;margin:.25rem 0}
+        .title p{color:#9ca3af;margin:0 auto;max-width:640px}
+        .param-label { font-size: .8rem; color: #f3f4f6; opacity: .85; }
+        .param-group { display: flex; align-items: center; gap: .4rem; }
+        #forceSelect { background-color: #374151; color: #f3f4f6; border: 1px solid #4b5563; border-radius: .375rem; font-size: .8rem; padding: .1rem; }
+    </style>
+</head>
+<body>
+    <div class="title">
+        <h1>Driven Pendulum</h1>
+        <p>Click to add a trajectory. Drag to pan. Scroll to zoom.</p>
+    </div>
+
+    <div id="wrap">
+        <canvas id="phaseCanvas"></canvas>
+        <div id="equation" style="position:absolute;left:.5rem;top:.5rem;background:transparent;padding:.4rem .6rem;border-radius:.5rem;font-size:.9rem;line-height:1.2;pointer-events:none">
+            <div style="font-weight:700;margin-bottom:.25rem">Driven Pendulum</div>
+            <div style="white-space:pre; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;">
+θ'' + δθ' + sin(θ) = F(t)
+            </div>
+        </div>
+        <div class="controls">
+            <button id="startStopBtn" class="btn">Start</button>
+            <button id="resetBtn" class="btn">Reset</button>
+            <button id="clearBtn" class="btn">Clear</button>
+            <div class="param-group">
+                <label for="forceSelect" class="param-label">Force:</label>
+                <select id="forceSelect">
+                    <option value="sinusoidal" selected>Sinusoidal</option>
+                    <option value="square">Square Wave</option>
+                    <option value="pulse">Pulse Train</option>
+                    <option value="step">Step Force</option>
+                    <option value="ramp">Ramp Force</option>
+                </select>
+            </div>
+            <div class="param-group">
+                 <label class="param-label">Damping (δ): <span id="dampingValue">0.50</span></label>
+                 <input id="dampingSlider" class="range" type="range" min="0" max="1" step="0.01" value="0.5" />
+            </div>
+             <div class="param-group">
+                 <label class="param-label">Amplitude (A): <span id="ampValue">1.50</span></label>
+                 <input id="ampSlider" class="range" type="range" min="0" max="2.5" step="0.01" value="1.5" />
+            </div>
+             <div class="param-group">
+                 <label class="param-label">Frequency (Ω): <span id="freqValue">0.67</span></label>
+                 <input id="freqSlider" class="range" type="range" min="0.1" max="2" step="0.01" value="0.666" />
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const $ = id => document.getElementById(id);
+    const canvas = $('phaseCanvas'), ctx = canvas.getContext('2d');
+    const startStopBtn = $('startStopBtn'), resetBtn = $('resetBtn'), clearBtn = $('clearBtn');
+    const dampingSlider = $('dampingSlider'), dampingValue = $('dampingValue');
+    const ampSlider = $('ampSlider'), ampValue = $('ampValue');
+    const freqSlider = $('freqSlider'), freqValue = $('freqValue');
+    const forceSelect = $('forceSelect');
+
+    let isAnimating = false, isPanning = false, lastX = 0, lastY = 0, clickTO = null, needsFullRedraw = true, time = 0;
+    const params = { gL: 1, damping: 0.5, dt: 0.02, driveAmp: 1.5, driveFreq: 2/3 };
+    const view = { tMin: -Math.PI, tMax: Math.PI, oMin: -3, oMax: 3, sX: 1, sY: 1 };
+    let trajectories = [];
+    let spawnCounter = 0;
+    const SPAWN_RATE = 45; // Frames between spawning new trajectories
+
+    const mapTo = (th, om) => ({ x: (th - view.tMin) * view.sX, y: canvas.height - (om - view.oMin) * view.sY });
+    const mapFrom = (x, y) => ({ th: x / view.sX + view.tMin, om: (canvas.height - y) / view.sY + view.oMin });
+
+    function getDrivingForce(t) {
+        const type = forceSelect.value;
+        if (type === 'sinusoidal') {
+            return params.driveAmp * Math.cos(params.driveFreq * t);
+        } else if (type === 'square') {
+            const period = 2 * Math.PI / params.driveFreq;
+            return (t % period) < (period / 2) ? params.driveAmp : -params.driveAmp;
+        } else if (type === 'pulse') {
+            const period = 2 * Math.PI / params.driveFreq;
+            const pulseWidth = 0.2; // A short duration for the pulse
+            return (t % period) < pulseWidth ? params.driveAmp : 0;
+        } else if (type === 'step') {
+            const stepTime = 5.0; // A fixed time for the step to occur
+            return t > stepTime ? params.driveAmp : 0;
+        } else if (type === 'ramp') {
+            const rampRate = params.driveFreq; // Use frequency slider to control the slope
+            return Math.min(params.driveAmp, rampRate * t);
+        }
+        return 0;
+    }
+
+    class Trajectory {
+        constructor(th, om, m = 1500) { // Increased trajectory length
+            this.history = [{ th, om }];
+            this.maxLen = m;
+            this.color = `hsl(${Math.random() * 360}, 90%, 65%)`;
+        }
+
+        step(t) {
+            let { th, om } = this.history[this.history.length - 1];
+            
+            const force = getDrivingForce(t);
+            om += (-params.gL * Math.sin(th) - params.damping * om + force) * params.dt;
+            th += om * params.dt;
+
+            // Keep theta within [-PI, PI] for cleaner plotting
+            th = (th + Math.PI) % (2 * Math.PI) - Math.PI;
+
+            this.history.push({ th, om });
+            if (this.history.length > this.maxLen) {
+                this.history.shift();
+            }
+        }
+
+        drawFull() {
+            if (this.history.length < 2) return;
+            ctx.beginPath();
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = 1.3;
+            ctx.globalAlpha = 0.9;
+            let lastPoint = mapTo(this.history[0].th, this.history[0].om);
+            ctx.moveTo(lastPoint.x, lastPoint.y);
+
+            for (let i = 1; i < this.history.length; i++) {
+                const p = this.history[i];
+                // Check for wrapping around the screen
+                if (Math.abs(this.history[i-1].th - p.th) > Math.PI) {
+                    ctx.stroke(); // End current line segment
+                    ctx.beginPath(); // Start a new one
+                }
+                const currentPoint = mapTo(p.th, p.om);
+                ctx.lineTo(currentPoint.x, currentPoint.y);
+            }
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+        }
+    }
+
+    function drawAxes() {
+        ctx.strokeStyle = '#4b5563';
+        ctx.lineWidth = 1;
+        const y0 = mapTo(0, 0).y;
+        if (y0 >= 0 && y0 <= canvas.height) {
+            ctx.beginPath(); ctx.moveTo(0, y0); ctx.lineTo(canvas.width, y0); ctx.stroke();
+        }
+       
+        ctx.fillStyle = '#9ca3af'; ctx.font = '12px system-ui, sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('θ', canvas.width / 2, y0 + 15);
+        ctx.textAlign = 'left';
+        ctx.fillText('ω', mapTo(view.tMin, 0).x + 5, 12);
+    }
+
+    function drawField() {
+        const nx = 40, ny = 24;
+        const L = 0.35 * Math.min(canvas.width / nx, canvas.height / ny);
+        ctx.save();
+        ctx.strokeStyle = 'rgba(200,200,200,.5)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= nx; i++) {
+            for (let j = 0; j <= ny; j++) {
+                const th = view.tMin + (i / nx) * (view.tMax - view.tMin);
+                const om = view.oMin + (j / ny) * (view.oMax - view.oMin);
+                // Vector field for the UNDRIVEN part of the system to show the underlying structure
+                let v_th = om;
+                let v_om = -params.gL * Math.sin(th) - params.damping * om;
+                const len = Math.hypot(v_th, v_om) || 1;
+                v_th /= len; v_om /= len;
+                const p = mapTo(th, om);
+                const a = { x: p.x - L * v_th, y: p.y + L * v_om };
+                const b = { x: p.x + L * v_th, y: p.y - L * v_om };
+                ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+            }
+        }
+        ctx.restore();
+    }
+
+    function setup() {
+        const size = Math.min(innerWidth * .92, 720);
+        canvas.width = size; canvas.height = size * .72;
+        view.sX = canvas.width / (view.tMax - view.tMin);
+        view.sY = canvas.height / (view.oMax - view.oMin);
+        needsFullRedraw = true;
+    }
+
+    function init() {
+        trajectories = [];
+        time = 0;
+        // Start with a few more trajectories
+        for (let i = 0; i < 15; i++) {
+            trajectories.push(new Trajectory(Math.random() * 2 * Math.PI - Math.PI, Math.random() * 4 - 2));
+        }
+    }
+
+    function redraw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        drawAxes();
+        drawField();
+        trajectories.forEach(t => t.drawFull());
+    }
+
+    function zoom(f, mousePos) {
+        const mouseCoords = mapFrom(mousePos.x, mousePos.y);
+        view.tMin = mouseCoords.th - (mouseCoords.th - view.tMin) * f;
+        view.tMax = mouseCoords.th + (view.tMax - mouseCoords.th) * f;
+        view.oMin = mouseCoords.om - (mouseCoords.om - view.oMin) * f;
+        view.oMax = mouseCoords.om + (view.oMax - mouseCoords.om) * f;
+        setup();
+    }
+    
+    let lastAnimationFrameTime = 0;
+    function animate(currentTime) {
+        requestAnimationFrame(animate);
+        if (!isAnimating) {
+            if (needsFullRedraw) { redraw(); needsFullRedraw = false; }
+            return;
+        }
+        
+        const elapsed = currentTime - lastAnimationFrameTime;
+        // Run simulation at a consistent rate, regardless of framerate
+        if (elapsed > 16) { // roughly 60fps
+            lastAnimationFrameTime = currentTime;
+            for (let i = 0; i < 2; i++) { // Increase steps per frame for speed
+                time += params.dt;
+                trajectories.forEach(t => t.step(time));
+            }
+
+            if (++spawnCounter > SPAWN_RATE && trajectories.length < 100) {
+                spawnCounter = 0;
+                trajectories.push(new Trajectory(Math.random() * 2 * Math.PI - Math.PI, Math.random() * 4 - 2));
+            }
+        }
+
+        redraw();
+        needsFullRedraw = false;
+    }
+
+    startStopBtn.onclick = () => { isAnimating = !isAnimating; startStopBtn.textContent = isAnimating ? 'Stop' : 'Start'; };
+    resetBtn.onclick = () => { init(); isAnimating = false; startStopBtn.textContent = 'Start'; needsFullRedraw = true; };
+    clearBtn.onclick = () => { trajectories = []; needsFullRedraw = true; };
+    
+    const updateParam = (slider, valueDisplay, paramName) => {
+        params[paramName] = +slider.value;
+        valueDisplay.textContent = (+slider.value).toFixed(2);
+        if (!isAnimating) needsFullRedraw = true;
+    };
+
+    dampingSlider.oninput = () => updateParam(dampingSlider, dampingValue, 'damping');
+    ampSlider.oninput = () => updateParam(ampSlider, ampValue, 'driveAmp');
+    freqSlider.oninput = () => updateParam(freqSlider, freqValue, 'driveFreq');
+    forceSelect.onchange = () => { if (!isAnimating) needsFullRedraw = true; };
+
+
+    canvas.onwheel = e => {
+        e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const mousePos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        const zoomFactor = e.deltaY < 0 ? 0.9 : 1.1;
+        zoom(zoomFactor, mousePos);
+        needsFullRedraw = true;
+    };
+    canvas.onmousedown = e => { isPanning = true; lastX = e.clientX; lastY = e.clientY; };
+    canvas.onmouseup = e => {
+        isPanning = false;
+        if (clickTO) {
+            clearTimeout(clickTO);
+            const r = canvas.getBoundingClientRect();
+            const { th, om } = mapFrom(e.clientX - r.left, e.clientY - r.top);
+            trajectories.push(new Trajectory(th, om));
+            needsFullRedraw = true;
+        }
+    };
+     canvas.onmouseleave=()=>{ isPanning=false; };
+    canvas.onmousemove = e => {
+        if (!isPanning) return;
+        if (clickTO !== null) { clearTimeout(clickTO); clickTO = null; }
+        const dx = e.clientX - lastX, dy = e.clientY - lastY;
+        lastX = e.clientX; lastY = e.clientY;
+        view.tMin -= dx / view.sX; view.tMax -= dx / view.sX;
+        view.oMin += dy / view.sY; view.oMax += dy / view.sY;
+        setup();
+    };
+
+    onresize = () => { setup(); };
+    setup(); init(); redraw();
+    requestAnimationFrame(animate);
+    </script>
+</body>
+</html>

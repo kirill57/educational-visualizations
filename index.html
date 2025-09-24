@@ -6,8 +6,7 @@
     <title>Interactive Visualization Gallery</title>
     <style>
         body { margin: 0; font-family: "Inter", sans-serif; color: #333; background-color: #f9f9f9; line-height: 1.5; }
-        h1 { font-size: 2rem; margin: 0.67em 0; text-align: center; }
-        p { margin: 0 0 1rem 0; }
+        h1, h2 { margin: 0.67em 0; }
         header { background-color: #343a40; color: white; padding: 1rem; text-align: center; font-size: 1.75rem; font-weight: 500; }
         #gallery { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); padding: 2rem; max-width: 1200px; margin: 0 auto; }
         .card { background-color: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s ease, box-shadow 0.2s ease; }
@@ -28,36 +27,36 @@
     <header>Interactive Visualization Gallery</header>
     <main>
         <section id="gallery">
-            <!-- Lorenz Attractor Card -->
+            <!-- Lorentz Attractor Card -->
             <div class="card">
-                <img src="https://placehold.co/400x200/000000/FFFFFF?text=Lorenz" alt="Lorenz Attractor visualization thumbnail" />
+                <img src="https://placehold.co/600x400/000000/FFFFFF?text=Lorentz" alt="Lorentz Attractor visualization thumbnail" />
                 <div class="card-content">
-                    <h2>Lorenz Attractor</h2>
-                    <p>Explore the butterfly-shaped plot of the Lorenz system, a classic example of deterministic chaos and the "butterfly effect."</p>
+                    <h2>Lorentz Attractor</h2>
+                    <p>Explore the butterfly-shaped strange attractor that arises from a simplified model of atmospheric convection, a classic example of deterministic chaos.</p>
                 </div>
                 <div class="links">
-                    <a href="visualizations/lorenz-attractor/index.html">Open Full</a>
-                    <a href="visualizations/lorenz-attractor/embed.html">Embed Version</a>
+                    <a href="visualizations/lorentz-attractor/index.html">Open Full</a>
+                    <a href="visualizations/lorentz-attractor/embed.html">Embed Version</a>
                 </div>
             </div>
             <!-- Pendulum Phase Portrait Card -->
             <div class="card">
-                <img src="https://placehold.co/400x200/111827/FFFFFF?text=Pendulum" alt="Pendulum Phase Portrait thumbnail" />
+                <img src="https://placehold.co/600x400/111827/FFFFFF?text=Pendulum" alt="Pendulum Phase Portrait thumbnail" />
                 <div class="card-content">
                     <h2>Pendulum Phase Portrait</h2>
-                    <p>Visualize the relationship between a pendulum's angle and velocity, revealing its behavior under different levels of friction.</p>
+                    <p>Visualize the relationship between a pendulum's angle and velocity. Explore how damping affects its path toward equilibrium.</p>
                 </div>
                 <div class="links">
                     <a href="visualizations/pendulum-phase-portrait/index.html">Open Full</a>
                     <a href="visualizations/pendulum-phase-portrait/embed.html">Embed Version</a>
                 </div>
             </div>
-            <!-- Van der Pol Oscillator Card -->
+             <!-- Van der Pol Oscillator Card -->
             <div class="card">
-                <img src="https://placehold.co/400x200/000000/FFFFFF?text=Van+der+Pol" alt="Van der Pol Oscillator thumbnail" />
+                <img src="https://placehold.co/600x400/111827/FFFFFF?text=Van+der+Pol" alt="Van der Pol Oscillator thumbnail" />
                 <div class="card-content">
                     <h2>Van der Pol Oscillator</h2>
-                    <p>See the famous "limit cycle" in action, a self-sustaining oscillation used to model systems in electronics and biology.</p>
+                    <p>Discover the behavior of a non-conservative oscillator with non-linear damping, leading to a stable and self-sustaining limit cycle.</p>
                 </div>
                 <div class="links">
                     <a href="visualizations/van-der-pol/index.html">Open Full</a>
@@ -66,14 +65,26 @@
             </div>
             <!-- Duffing Oscillator Card -->
             <div class="card">
-                <img src="https://placehold.co/400x200/000000/FFFFFF?text=Duffing" alt="Duffing Oscillator thumbnail" />
+                <img src="https://placehold.co/600x400/111827/FFFFFF?text=Duffing" alt="Duffing Oscillator thumbnail" />
                 <div class="card-content">
                     <h2>Duffing Oscillator</h2>
-                    <p>An archetype of chaos, this oscillator explores motion in a double-well potential, showing sensitivity to initial conditions.</p>
+                    <p>Investigate an oscillator with a nonlinear restoring force, revealing complex dynamics, coexisting attractors, and chaotic behavior.</p>
                 </div>
                 <div class="links">
                     <a href="visualizations/duffing-oscillator/index.html">Open Full</a>
                     <a href="visualizations/duffing-oscillator/embed.html">Embed Version</a>
+                </div>
+            </div>
+             <!-- Driven Pendulum Card -->
+            <div class="card">
+                <img src="https://placehold.co/600x400/111827/FFFFFF?text=Driven+Pendulum" alt="Driven Pendulum thumbnail" />
+                <div class="card-content">
+                    <h2>Driven Pendulum</h2>
+                    <p>Witness how adding an external periodic force to a simple pendulum can lead to extraordinarily complex and chaotic motion.</p>
+                </div>
+                <div class="links">
+                    <a href="visualizations/driven-pendulum/index.html">Open Full</a>
+                    <a href="visualizations/driven-pendulum/embed.html">Embed Version</a>
                 </div>
             </div>
         </section>
