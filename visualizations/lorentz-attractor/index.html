@@ -1,403 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Lorentz Attractor | Interactive Exploration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Lorentz Attractor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
-      body {
-        margin: 0;
-        font-family: "Inter", sans-serif;
-        background-color: #f0f0f0;
-        color: #333;
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-      }
-      header {
-        background-color: #343a40;
-        color: white;
-        padding: 1rem;
-        text-align: center;
-        font-size: 1.5rem;
-        font-weight: 500;
-      }
-      main {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-      }
-      .content {
-        max-width: 800px;
-        margin: 2rem auto;
-        padding: 0 1rem;
-      }
-      h2 {
-        margin-top: 0;
-      }
-      .visualization-wrapper {
-        position: relative;
-        flex: 1;
-        min-height: 500px;
-      }
-      canvas {
-        display: block;
-      }
-      /* Reuse control styles from embed version */
-      #controls {
-        position: absolute;
-        bottom: 20px;
-        left: 20px;
-        z-index: 100;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-      }
-      .speed-control-container {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        background-color: rgba(0, 0, 0, 0.5);
-        padding: 5px;
-        border-radius: 8px;
-        border: 1px solid white;
-      }
-      #speedDisplay {
-        font-size: 0.9em;
-        min-width: 50px;
-        text-align: center;
-        padding: 0 5px;
-        color: white;
-      }
-      button {
-        padding: 8px 14px;
-        font-size: 1em;
-        background-color: rgba(0, 0, 0, 0.5);
-        color: white;
-        border: 1px solid white;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background-color 0.3s, transform 0.1s;
-        font-family: "Inter", sans-serif;
-      }
-      button:hover {
-        background-color: rgba(255, 255, 255, 0.2);
-      }
-      button:active {
-        transform: scale(0.95);
-      }
-      .speed-control-container button {
-        background: none;
-        border: none;
-        font-size: 1.2em;
-        padding: 0 10px;
-        line-height: 1;
-      }
-      button.active {
-        background-color: rgba(255, 255, 255, 0.4);
-        box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-      }
-      footer {
-        background-color: #343a40;
-        color: white;
-        padding: 1rem;
-        text-align: center;
-      }
-      a.return-link {
-        display: inline-block;
-        margin-bottom: 1rem;
-        color: #007bff;
-        text-decoration: none;
-      }
-      a.return-link:hover {
-        text-decoration: underline;
-      }
+        body { font-family: 'Inter', sans-serif; margin: 0; background-color: #f0f2f5; color: #1c1e21; }
+        header { background-color: #343a40; color: white; padding: 2rem; text-align: center; }
+        header h1 { margin: 0; font-size: 2.5rem; }
+        main { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+        article { background-color: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { border-bottom: 2px solid #007bff; padding-bottom: 0.5rem; margin-top: 2rem; color: #007bff; }
+        p, li { line-height: 1.7; color: #495057; }
+        .iframe-container { position: relative; overflow: hidden; width: 100%; padding-top: 70%; /* 10:7 Aspect Ratio */ margin: 2rem 0; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .iframe-container iframe { position: absolute; top: 0; left: 0; bottom: 0; right: 0; width: 100%; height: 100%; border: none; }
+        footer { text-align: center; padding: 2rem; background-color: #343a40; color: white; margin-top: 2rem; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
     </style>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
-    <script type="importmap">
-      {
-        "imports": {
-          "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
-          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"
-        }
-      }
-    </script>
-    <!-- MathJax for rendering LaTeX equations -->
-    <script
-      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
-      id="MathJax-script"
-      async
-    ></script>
-  </head>
-  <body>
-    <header>Lorentz Attractor Exploration</header>
+</head>
+<body>
+    <header>
+        <h1>The Lorentz Attractor</h1>
+    </header>
     <main>
-      <div class="content">
-        <a class="return-link" href="../../index.html">← Back to Gallery</a>
-        <h2>Understanding the Lorenz Attractor</h2>
-        <p>
-          The Lorenz system is a set of three coupled, nonlinear differential
-          equations originally developed by Edward Lorenz as a simplified model
-          of atmospheric convection. It is renowned for exhibiting
-          <em>deterministic chaos</em>: tiny differences in initial conditions
-          grow exponentially over time, leading to vastly different outcomes.
-          This sensitivity is often referred to as the “butterfly effect”.
-        </p>
-        <p>
-          The equations that define the Lorenz system are:
-        </p>
-        <div style="padding: 0.5rem 1rem; background-color: #e9ecef; border-left: 4px solid #007bff; margin-bottom: 1rem;">
-          <p style="margin: 0; font-family: monospace;">
-            \[\begin{aligned}
-            \dot{x} &= \sigma(y - x) \\[-0.5ex]
-            \dot{y} &= x(\rho - z) - y \\[-0.5ex]
-            \dot{z} &= xy - \beta z
-            \end{aligned}\]
-          </p>
-        </div>
-        <p>
-          In the classic Lorenz attractor, the parameters are typically set to
-          \(\sigma = 10\), \(\rho = 28\), and \(\beta = 8/3\). The system’s
-          solutions never settle down to a fixed point or a simple orbit but
-          instead trace out a beautiful, butterfly-shaped structure in phase
-          space. Use the controls below to explore how the trajectories evolve
-          over time. You can pause the animation, change the speed, reverse the
-          direction, or reset to the starting conditions.
-        </p>
-      </div>
-      <div class="visualization-wrapper">
-        <!-- Controls for interactivity -->
-        <div id="controls">
-          <button id="startStopBtn">Pause</button>
-          <div class="speed-control-container">
-            <button id="slowerBtn" title="Slower">-</button>
-            <span id="speedDisplay">1x</span>
-            <button id="fasterBtn" title="Faster">+</button>
-          </div>
-          <button id="reverseBtn">Reverse</button>
-          <button id="resetBtn">Reset</button>
-        </div>
-      </div>
+        <article>
+            <h2>Understanding the Visualization</h2>
+            <p>
+                The Lorenz system is a set of three coupled, nonlinear differential
+                equations originally developed by Edward Lorenz as a simplified model
+                of atmospheric convection. It is renowned for exhibiting
+                <em>deterministic chaos</em>: tiny differences in initial conditions
+                grow exponentially over time, leading to vastly different outcomes.
+                This sensitivity is often referred to as the “butterfly effect”.
+            </p>
+
+            <div class="iframe-container">
+                <iframe src="embed.html" title="Interactive Lorentz Attractor Visualization"></iframe>
+            </div>
+
+            <h2>The Equations of Chaos</h2>
+            <p>
+                The equations that define the Lorenz system are:
+            </p>
+            $$
+            \begin{aligned}
+            \frac{dx}{dt} &= \sigma(y - x) \\
+            \frac{dy}{dt} &= x(\rho - z) - y \\
+            \frac{dz}{dt} &= xy - \beta z
+            \end{aligned}
+            $$
+            <p>
+                In the classic Lorenz attractor, the parameters are typically set to
+                \(\sigma = 10\), \(\rho = 28\), and \(\beta = 8/3\). The system’s
+                solutions never settle down to a fixed point or a simple orbit but
+                instead trace out a beautiful, butterfly-shaped structure in phase
+                space. Use the controls in the visualization to explore how the trajectories evolve
+                over time.
+            </p>
+        </article>
     </main>
     <footer>
-      &copy; 2025 Interactive Educational Visualizations. All rights reserved.
+        <p>&copy; 2025 Interactive Educational Visualizations. | <a href="../../index.html">Back to Gallery</a></p>
     </footer>
-    <script type="module">
-      import * as THREE from "three";
-      import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-
-      // Attach the renderer to the wrapper so it occupies available space
-      const container = document.querySelector(".visualization-wrapper");
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(
-        75,
-        container.clientWidth / container.clientHeight,
-        0.1,
-        1000
-      );
-      const renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(container.clientWidth, container.clientHeight);
-      container.appendChild(renderer.domElement);
-
-      // Animation state
-      let isAnimating = true;
-      let timeDirection = 1;
-      const speedSettings = [0.1, 0.25, 0.5, 0.75, 1, 2, 4, 8, 16, 32];
-      let currentSpeedIndex = 4;
-      let frameCounter = 0;
-
-      // Controls
-      const controls = new OrbitControls(camera, renderer.domElement);
-      controls.enableDamping = true;
-      controls.dampingFactor = 0.05;
-      controls.screenSpacePanning = false;
-      controls.minDistance = 1;
-      controls.maxDistance = 200;
-      controls.autoRotate = true;
-      controls.autoRotateSpeed = 0.5;
-
-      // Lighting
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-      scene.add(ambientLight);
-      const pointLight = new THREE.PointLight(0xffffff, 1);
-      scene.add(pointLight);
-      camera.position.set(0, 10, 60);
-      camera.lookAt(scene.position);
-
-      // Lorenz parameters
-      const sigma = 10;
-      const rho = 28;
-      const beta = 8.0 / 3.0;
-      const dt = 0.01;
-
-      // Trajectory class as before
-      class Trajectory {
-        constructor(initialPos, baseHue, trailLength = 800, historyLength = 5000) {
-          this.initialPosition = initialPos.clone();
-          this.position = initialPos.clone();
-          this.baseHue = baseHue;
-          this.trailLength = trailLength;
-          this.maxHistory = historyLength;
-          this.history = [this.initialPosition.clone()];
-          this.historyIndex = 0;
-          this.spheres = [];
-          this.currentIndex = 0;
-          const sphereGeometry = new THREE.SphereGeometry(0.2, 8, 8);
-          for (let i = 0; i < this.trailLength; i++) {
-            const material = new THREE.MeshStandardMaterial({
-              color: 0xffffff,
-              emissive: 0x000000,
-              metalness: 0.1,
-              roughness: 0.5,
-            });
-            const sphere = new THREE.Mesh(sphereGeometry, material);
-            sphere.scale.set(0, 0, 0);
-            this.spheres.push(sphere);
-            scene.add(sphere);
-          }
-        }
-        reset() {
-          this.position.copy(this.initialPosition);
-          this.history = [this.initialPosition.clone()];
-          this.historyIndex = 0;
-          this.currentIndex = 0;
-          for (const sphere of this.spheres) {
-            sphere.scale.set(0, 0, 0);
-          }
-        }
-        update(direction = 1) {
-          if (direction === 1) {
-            if (this.historyIndex >= this.history.length - 1) {
-              const dx = sigma * (this.position.y - this.position.x);
-              const dy = this.position.x * (rho - this.position.z) - this.position.y;
-              const dz = this.position.x * this.position.y - beta * this.position.z;
-              this.position.x += dx * dt;
-              this.position.y += dy * dt;
-              this.position.z += dz * dt;
-              this.history.push(this.position.clone());
-              this.historyIndex++;
-              if (this.history.length > this.maxHistory) {
-                this.history.shift();
-                this.historyIndex--;
-              }
-            } else {
-              this.historyIndex++;
-              this.position.copy(this.history[this.historyIndex]);
-            }
-          } else {
-            if (this.historyIndex > 0) {
-              this.historyIndex--;
-              this.position.copy(this.history[this.historyIndex]);
-            }
-          }
-          this.currentIndex = (this.currentIndex + 1) % this.trailLength;
-          for (let i = 0; i < this.trailLength; i++) {
-            const spherePoolIndex = (this.currentIndex - i + this.trailLength) % this.trailLength;
-            const sphere = this.spheres[spherePoolIndex];
-            const historyLookupIndex = this.historyIndex - i;
-            if (historyLookupIndex >= 0 && historyLookupIndex < this.history.length) {
-              sphere.position.copy(this.history[historyLookupIndex]);
-              const age = i / this.trailLength;
-              const scale = (1 - age) * 0.8;
-              sphere.scale.set(scale, scale, scale);
-              const lightness = 0.3 + (1 - age) * 0.7;
-              const saturation = 0.8 + (1 - age) * 0.2;
-              const hue = this.baseHue + age * 0.1;
-              sphere.material.color.setHSL(hue, saturation, lightness);
-              sphere.material.emissive.setHSL(hue, saturation, lightness * 0.4);
-            } else {
-              sphere.scale.set(0, 0, 0);
-            }
-          }
-        }
-      }
-      const trajectories = [
-        new Trajectory(new THREE.Vector3(0.1, 0, 0), 0.55),
-        new Trajectory(new THREE.Vector3(0.11, 0, 0), 0.0),
-        new Trajectory(new THREE.Vector3(0.12, 0, 0), 0.3),
-      ];
-      const group = new THREE.Group();
-      group.position.y = -15;
-      scene.add(group);
-      trajectories.forEach((t) => t.spheres.forEach((s) => group.add(s)));
-      const startStopBtn = document.getElementById("startStopBtn");
-      const slowerBtn = document.getElementById("slowerBtn");
-      const fasterBtn = document.getElementById("fasterBtn");
-      const speedDisplay = document.getElementById("speedDisplay");
-      const resetBtn = document.getElementById("resetBtn");
-      const reverseBtn = document.getElementById("reverseBtn");
-      function updateSpeedDisplay() {
-        speedDisplay.textContent = `${speedSettings[currentSpeedIndex]}x`;
-        speedDisplay.style.color = "white";
-      }
-      startStopBtn.addEventListener("click", () => {
-        isAnimating = !isAnimating;
-        startStopBtn.textContent = isAnimating ? "Pause" : "Resume";
-        controls.autoRotate = isAnimating;
-      });
-      slowerBtn.addEventListener("click", () => {
-        currentSpeedIndex = Math.max(0, currentSpeedIndex - 1);
-        updateSpeedDisplay();
-      });
-      fasterBtn.addEventListener("click", () => {
-        currentSpeedIndex = Math.min(speedSettings.length - 1, currentSpeedIndex + 1);
-        updateSpeedDisplay();
-      });
-      reverseBtn.addEventListener("click", () => {
-        timeDirection *= -1;
-        reverseBtn.textContent = timeDirection === 1 ? "Reverse" : "Forward";
-      });
-      resetBtn.addEventListener("click", () => {
-        trajectories.forEach((t) => t.reset());
-        currentSpeedIndex = 4;
-        updateSpeedDisplay();
-        timeDirection = 1;
-        reverseBtn.textContent = "Reverse";
-        if (!isAnimating) {
-          isAnimating = true;
-          startStopBtn.textContent = "Pause";
-          controls.autoRotate = true;
-        }
-      });
-      function animate() {
-        requestAnimationFrame(animate);
-        if (isAnimating) {
-          const speed = speedSettings[currentSpeedIndex];
-          if (speed >= 1) {
-            for (let i = 0; i < speed; i++) {
-              trajectories.forEach((t) => t.update(timeDirection));
-            }
-          } else {
-            frameCounter++;
-            if (frameCounter >= 1 / speed) {
-              frameCounter = 0;
-              trajectories.forEach((t) => t.update(timeDirection));
-            }
-          }
-          if (trajectories.length > 0) {
-            pointLight.position
-              .copy(trajectories[0].position)
-              .add(group.position);
-          }
-        }
-        controls.update();
-        renderer.render(scene, camera);
-      }
-      // Resize event handler
-      function onResize() {
-        const { clientWidth, clientHeight } = container;
-        camera.aspect = clientWidth / clientHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(clientWidth, clientHeight);
-      }
-      window.addEventListener("resize", onResize);
-      updateSpeedDisplay();
-      animate();
-    </script>
-  </body>
+</body>
 </html>
+

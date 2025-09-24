@@ -4,8 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pendulum Phase Portrait</title>
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
   <style>
     :root { --panel: rgba(31,41,55,.35); }
     body{font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;margin:0;background:#111827;color:#f3f4f6;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow:hidden}
@@ -22,39 +20,16 @@
     .title{margin:1rem 0;text-align:center}
     .title h1{font-size:2rem;font-weight:800;letter-spacing:-.02em;margin:.25rem 0}
     .title p{color:#9ca3af;margin:0 auto;max-width:640px}
-
-    /* Modal Styles */
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: none; justify-content: center; align-items: center; z-index: 1000; }
-    .modal-content { background: #1f2937; color: #f3f4f6; padding: 1rem; border-radius: .5rem; max-width: 600px; width: 90%; height: 80vh; display: flex; flex-direction: column; position: relative; border: 1px solid #374151; }
-    .modal-close { position: absolute; top: .75rem; right: .75rem; background: none; border: none; color: #9ca3af; font-size: 1.5rem; cursor: pointer; line-height: 1; }
-    .modal-close:hover { color: #fff; }
-    #explanationText { flex-grow: 1; overflow-y: auto; padding-right: .5rem; margin-bottom: 1rem; }
-    .loader { margin: 2rem auto; width: 40px; height: 40px; border: 4px solid #4b5563; border-top-color: #60a5fa; border-radius: 50%; animation: spin 1s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    
-    .message { padding: .75rem; border-radius: .5rem; margin-bottom: .5rem; line-height: 1.6; }
-    .message.model { background-color: #374151; }
-    .message.user { background-color: #4f46e5; color: #fff; text-align: right; }
-    
-    #followUpContainer { display: none; flex-shrink: 0; }
-    #followUpForm { display: flex; gap: .5rem; }
-    #followUpInput { flex-grow: 1; background: #374151; border: 1px solid #4b5563; color: #f3f4f6; padding: .5rem .75rem; border-radius: .375rem; }
-    #followUpInput:focus { outline: none; border-color: #60a5fa; }
-    #followUpBtn { background-color: #4f46e5; }
-    #followUpBtn:hover { background-color: #4338ca; }
-    #followUpBtn:disabled { background-color: #4b5563; cursor: not-allowed; }
-
   </style>
 </head>
 <body>
   <div class="title">
     <h1>Pendulum Phase Portrait</h1>
-    <p>Click to add a trajectory. Drag to pan. Use the controls inside the plot.</p>
+    <p>Click to add a trajectory. Drag to pan. Scroll to zoom.</p>
   </div>
 
   <div id="wrap">
     <canvas id="phaseCanvas"></canvas>
-    <!-- Top-left equation panel inside the viewing area -->
     <div id="equation" style="position:absolute;left:.5rem;top:.5rem;background:transparent;padding:.4rem .6rem;border-radius:.5rem;font-size:.9rem;line-height:1.2;pointer-events:none">
       <div style="font-weight:700;margin-bottom:.25rem">Damped pendulum (phase form)</div>
       <div style="white-space:pre; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;">
@@ -66,25 +41,8 @@
       <button id="startStopBtn" class="btn">Start</button>
       <button id="resetBtn" class="btn">Reset</button>
       <button id="clearBtn" class="btn">Clear</button>
-      <button id="explainBtn" class="btn">✨ Explain Plot</button>
-      <label class="text-xs" style="opacity:.85">Damping: <span id="dampingValue">0.10</span></label>
+      <label class="text-xs" style="opacity:.85; color: #f3f4f6; font-size: .8rem;">Damping: <span id="dampingValue">0.10</span></label>
       <input id="dampingSlider" class="range" type="range" min="-0.5" max="0.5" step="0.01" value="0.1" />
-    </div>
-  </div>
-
-  <!-- Modal for Gemini Explanation -->
-  <div id="explanationModal" class="modal-overlay">
-    <div class="modal-content">
-      <button id="modalCloseBtn" class="modal-close">&times;</button>
-      <div id="explanationText">
-        <div id="initialLoader" class="loader"></div>
-      </div>
-      <div id="followUpContainer">
-        <form id="followUpForm">
-          <input type="text" id="followUpInput" placeholder="Ask a follow-up question..." autocomplete="off">
-          <button type="submit" id="followUpBtn" class="btn">Send</button>
-        </form>
-      </div>
     </div>
   </div>
 
@@ -92,16 +50,12 @@
   // ---------- Elements & State ----------
   const $=id=>document.getElementById(id);
   const canvas=$('phaseCanvas'),ctx=canvas.getContext('2d');
-  const startStopBtn=$('startStopBtn'),resetBtn=$('resetBtn'),clearBtn=$('clearBtn'), explainBtn = $('explainBtn');
+  const startStopBtn=$('startStopBtn'),resetBtn=$('resetBtn'),clearBtn=$('clearBtn');
   const dampingSlider=$('dampingSlider'),dampingValue=$('dampingValue');
-  const explanationModal = $('explanationModal'), modalCloseBtn = $('modalCloseBtn');
-  const explanationText = $('explanationText'), initialLoader = $('initialLoader');
-  const followUpContainer = $('followUpContainer'), followUpForm = $('followUpForm'), followUpInput = $('followUpInput'), followUpBtn = $('followUpBtn');
 
   let isAnimating=false,isPanning=false,lastX=0,lastY=0,clickTO=null,spawnC=0,needsFullRedraw=true;
   const SPAWN=60,params={gL:1,damping:.1,dt:.01},view={tMin:-2*Math.PI,tMax:2*Math.PI,oMin:-3,oMax:3,sX:1,sY:1};
   let trajectories=[];
-  let conversationHistory = [];
 
   // ---------- Coordinate Maps ----------
   const mapTo=(th,om)=>({x:(th-view.tMin)*view.sX,y:canvas.height-(om-view.oMin)*view.sY});
@@ -189,107 +143,12 @@
     } else if(needsFullRedraw){ redraw(); needsFullRedraw=false; }
     requestAnimationFrame(animate);
   }
-
-  // ---------- Gemini API Integration ----------
-  function renderConversation() {
-      explanationText.innerHTML = '';
-      conversationHistory.forEach(turn => {
-          const messageDiv = document.createElement('div');
-          messageDiv.classList.add('message', turn.role === 'user' ? 'user' : 'model');
-          messageDiv.innerHTML = turn.parts[0].text;
-          explanationText.appendChild(messageDiv);
-      });
-
-      if (window.MathJax) {
-          window.MathJax.typesetPromise([explanationText]).catch(err => console.error('MathJax error', err));
-      }
-      explanationText.scrollTop = explanationText.scrollHeight;
-  }
-
-  async function callGeminiAPI() {
-      const systemPrompt = `You are an expert physics and mathematics tutor. A user is looking at a phase portrait for a damped pendulum, which is a plot of angular velocity versus angular position. When you write formulas or mathematical variables, you MUST format them using LaTeX. Use \\(...\\) for inline math and $$...$$ for display math. For example, write angular velocity as \\(\\omega\\) and angular position as \\(\\theta\\). The governing equations are: $$\\theta' = \\omega$$ $$ \\omega' = - (g/L)\\cdot\\sin(\\theta) - \\gamma\\cdot\\omega $$ The g/L term is constant at 1.0. Keep your answers concise and focused on the user's question.`;
-      
-      const apiKey = ""; // Canvas will provide the key
-      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-
-      const payload = {
-          contents: conversationHistory,
-          systemInstruction: { parts: [{ text: systemPrompt }] },
-      };
-
-      try {
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) throw new Error(`API call failed: ${response.status}`);
-        
-        const result = await response.json();
-        const candidate = result.candidates?.[0];
-
-        if (candidate && candidate.content?.parts?.[0]?.text) {
-            conversationHistory.push({ role: 'model', parts: [{ text: candidate.content.parts[0].text }] });
-        } else {
-            conversationHistory.push({ role: 'model', parts: [{ text: '<p>Sorry, I could not generate an explanation. Please try again.</p>' }] });
-            console.error('Unexpected API response structure:', result);
-        }
-      } catch (error) {
-          console.error("Error fetching explanation:", error);
-          conversationHistory.push({ role: 'model', parts: [{ text: `<p>An error occurred. Please check the console.</p>` }] });
-      } finally {
-          renderConversation();
-          followUpInput.disabled = false;
-          followUpBtn.disabled = false;
-          followUpInput.focus();
-          initialLoader.style.display = 'none';
-          followUpContainer.style.display = 'block';
-      }
-  }
-
+  
   // ---------- Events ----------
   startStopBtn.onclick=()=>{ isAnimating=!isAnimating; startStopBtn.textContent=isAnimating?'Stop':'Start'; if(!isAnimating){ needsFullRedraw=true; redraw(); } };
-  resetBtn.onclick=()=>{ Object.assign(view,{tMin:-2*Math.PI,tMax:2*Math.PI,oMin:-3,oMax:3}); setup(); init(); isAnimating=true; startStopBtn.textContent='Stop'; needsFullRedraw=true; };
+  resetBtn.onclick=()=>{ Object.assign(view,{tMin:-2*Math.PI,tMax:2*Math.PI,oMin:-3,oMax:3}); setup(); init(); isAnimating=false; startStopBtn.textContent='Start'; needsFullRedraw=true; redraw(); };
   clearBtn.onclick=()=>{ init(); needsFullRedraw=true; };
   dampingSlider.oninput=e=>{ params.damping=+e.target.value; dampingValue.textContent=params.damping.toFixed(2); needsFullRedraw=true; };
-
-  explainBtn.onclick = () => {
-    explanationModal.style.display = 'flex';
-    initialLoader.style.display = 'block';
-    explanationText.innerHTML = '';
-    followUpContainer.style.display = 'none';
-    
-    conversationHistory = [];
-    const initialQuery = `The user has set the damping coefficient (\\(\\gamma\\)) to ${params.damping.toFixed(2)}. Please provide a clear, concise, and easy-to-understand explanation of what the phase portrait is showing, formatted in HTML with paragraphs (<p>) and lists (<ul><li>). Explain: 1. What the axes represent. 2. What a single trajectory represents. 3. The behavior of the system based on the current damping value. 4. Any interesting features like stable or unstable points.`;
-    conversationHistory.push({ role: 'user', parts: [{ text: initialQuery }] });
-    
-    callGeminiAPI();
-  };
-  
-  followUpForm.onsubmit = (e) => {
-    e.preventDefault();
-    const userText = followUpInput.value.trim();
-    if (!userText) return;
-
-    conversationHistory.push({ role: 'user', parts: [{ text: userText }] });
-    renderConversation();
-    followUpInput.value = '';
-    followUpInput.disabled = true;
-    followUpBtn.disabled = true;
-
-    // Add a temporary loader for the model's response
-    const thinkingMessage = document.createElement('div');
-    thinkingMessage.classList.add('message', 'model');
-    thinkingMessage.innerHTML = '<div class="loader" style="width:20px;height:20px;margin:0;"></div>';
-    explanationText.appendChild(thinkingMessage);
-    explanationText.scrollTop = explanationText.scrollHeight;
-
-    callGeminiAPI();
-  };
-
-  modalCloseBtn.onclick = () => { explanationModal.style.display = 'none'; };
-  explanationModal.onclick = (e) => { if (e.target === explanationModal) { explanationModal.style.display = 'none'; }};
 
   canvas.onwheel = e => {
     e.preventDefault();
@@ -303,15 +162,9 @@
   canvas.onmousemove=e=>{ if(!isPanning) return; if(clickTO){ clearTimeout(clickTO); clickTO=null; } const dx=e.clientX-lastX, dy=e.clientY-lastY; lastX=e.clientX; lastY=e.clientY; view.tMin-=dx/view.sX; view.tMax-=dx/view.sX; view.oMin+=dy/view.sY; view.oMax+=dy/view.sY; setup(); needsFullRedraw=true; };
   onresize=()=>{ setup(); needsFullRedraw=true; };
 
-  // ---------- Boot & Tiny Sanity Tests ----------
+  // ---------- Boot ----------
   setup(); init(); redraw();
-  console.assert(typeof drawField==='function', 'drawField should exist');
-  console.assert(!Number.isNaN(mapTo(0,0).x), 'mapTo should return finite coords');
   requestAnimationFrame(animate);
   </script>
 </body>
 </html>
-
-
-
-

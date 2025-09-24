@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Van der Pol Oscillator</title>
+  <style>
+    /* Basic styling for embed */
+    body { margin: 0; background-color: #111827; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; font-family: system-ui, sans-serif; }
+    #wrap { position: relative; display: inline-block; box-shadow: 0 0 20px rgba(0, 191, 255, 0.25); border: 1px solid #374151; border-radius: .5rem; }
+    canvas { background: #000; cursor: grab; display: block; border-radius: .5rem; }
+    canvas:active { cursor: grabbing; }
+    .controls { position: absolute; left: 50%; bottom: .5rem; transform: translateX(-50%); display: flex; flex-direction: row; gap: .5rem; align-items: center; justify-content: center; background: rgba(31, 41, 55, .35); backdrop-filter: blur(4px); padding: .25rem .5rem; border-radius: .5rem; pointer-events: none; }
+    .controls>* { pointer-events: auto; }
+    .btn { background: #374151; color: #f3f4f6; padding: .25rem .5rem; border: 0; border-radius: .375rem; font-weight: 600; font-size: .8rem; cursor: pointer; }
+    .btn:hover { background: #4b5563; }
+    .range { width: 100px; height: 6px; background: #4b5563; border-radius: 3px; outline: 0; -webkit-appearance: none; appearance: none; }
+    .range::-webkit-slider-thumb { width: 14px; height: 14px; background: #60a5fa; border-radius: 50%; box-shadow: 0 0 4px #60a5fa; -webkit-appearance: none; appearance: none; }
+    .range::-moz-range-thumb { width: 14px; height: 14px; background: #60a5fa; border-radius: 50%; box-shadow: 0 0 4px #60a5fa; }
+    #equation { position: absolute; left: .5rem; top: .5rem; background: transparent; padding: .4rem .6rem; border-radius: .5rem; font-size: .9rem; line-height: 1.2; pointer-events: none; color: #f3f4f6; }
+  </style>
+</head>
+<body>
+  <div id="wrap">
+    <canvas id="phaseCanvas"></canvas>
+    <div id="equation">
+      <div style="font-weight:700;margin-bottom:.25rem">Van der Pol Oscillator</div>
+      <div style="white-space:pre; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;">x' = y
+y' = μ(1-x²)y - x</div>
+    </div>
+    <div class="controls">
+      <button id="startStopBtn" class="btn">Start</button>
+      <button id="resetBtn" class="btn">Reset</button>
+      <button id="clearBtn" class="btn">Clear</button>
+      <label class="text-xs" style="opacity:.85; color: #f3f4f6; font-size: .8rem;">μ: <span id="muValue">1.00</span></label>
+      <input id="muSlider" class="range" type="range" min="0" max="5" step="0.05" value="1" />
+    </div>
+  </div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const canvas = $('phaseCanvas'), ctx = canvas.getContext('2d');
+    const startStopBtn = $('startStopBtn'), resetBtn = $('resetBtn'), clearBtn = $('clearBtn');
+    const muSlider = $('muSlider'), muValue = $('muValue');
+
+    let isAnimating = false, isPanning = false, lastX = 0, lastY = 0, clickTO = null, spawnC = 0, needsFullRedraw = true;
+    const SPAWN = 60, params = { mu: 1.0, dt: .01 }, view = { xMin: -3, xMax: 3, yMin: -3, yMax: 3, sX: 1, sY: 1 };
+    let trajectories = [];
+
+    const mapTo = (x, y) => ({ x: (x - view.xMin) * view.sX, y: canvas.height - (y - view.yMin) * view.sY });
+    const mapFrom = (px, py) => ({ x: px / view.sX + view.xMin, y: (canvas.height - py) / view.sY + view.yMin });
+    
+    class Traj {
+      constructor(x, y, m = 1000) { this.h = [{ x, y }], this.i = 0, this.m = m, this.c = `hsl(${Math.random() * 360},90%,65%)`; }
+      step() { let { x, y } = this.h[this.h.length - 1]; const dx = y; const dy = params.mu * (1 - x * x) * y - x; x += dx * params.dt; y += dy * params.dt; this.h.push({ x, y }); if (this.h.length > this.m) { this.h.shift(); this.i = Math.max(0, this.i - 1); } }
+      drawFull() { if (this.h.length < 2) return; ctx.beginPath(); ctx.strokeStyle = this.c; ctx.lineWidth = 1.3; ctx.globalAlpha = .9; for (let k = 1; k < this.h.length; k++) { const a = mapTo(this.h[k - 1].x, this.h[k - 1].y), b = mapTo(this.h[k].x, this.h[k].y); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); } ctx.stroke(); ctx.globalAlpha = 1; }
+      drawSegment(prev, curr) { const a = mapTo(prev.x, prev.y), b = mapTo(curr.x, curr.y); ctx.beginPath(); ctx.strokeStyle = this.c; ctx.lineWidth = 1.3; ctx.globalAlpha = .95; ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); ctx.globalAlpha = 1; }
+    }
+    
+    function drawAxes() { ctx.strokeStyle = '#4b5563'; ctx.lineWidth = 1; const y0 = mapTo(0, 0).y; if (y0 >= 0 && y0 <= canvas.height) { ctx.beginPath(); ctx.moveTo(0, y0); ctx.lineTo(canvas.width, y0); ctx.stroke(); } const x0 = mapTo(0, 0).x; if (x0 >= 0 && x0 <= canvas.width) { ctx.beginPath(); ctx.moveTo(x0, 0); ctx.lineTo(x0, canvas.height); ctx.stroke(); } ctx.fillStyle = '#9ca3af'; ctx.font = '12px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillText('x', canvas.width - 12, y0 + 5); ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText('y', x0 + 5, 12); }
+    function drawField() { const nx = 30, ny = 30; const dxpx = canvas.width / nx, dypx = canvas.height / ny; const L = 0.35 * Math.min(dxpx, dypx); ctx.save(); ctx.strokeStyle = 'rgba(200,200,200,.6)'; ctx.lineWidth = 1; for (let i = 0; i <= nx; i++) { for (let j = 0; j <= ny; j++) { const x = view.xMin + (i / nx) * (view.xMax - view.xMin); const y = view.yMin + (j / ny) * (view.yMax - view.yMin); let v1 = y; let v2 = params.mu * (1 - x * x) * y - x; const len = Math.hypot(v1, v2) || 1; v1 /= len; v2 /= len; const p = mapTo(x, y); const a = { x: p.x - L * v1, y: p.y + L * v2 }; const b = { x: p.x + L * v1, y: p.y - L * v2 }; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); } } ctx.restore(); }
+    function setup() { const w = Math.min(innerWidth, 800); canvas.width = w; canvas.height = w * 0.7; view.sX = canvas.width / (view.xMax - view.xMin); view.sY = canvas.height / (view.yMax - view.yMin); needsFullRedraw = true; }
+    function init() { trajectories = []; trajectories.push(new Traj(0.1, 0.1)); trajectories.push(new Traj(2.5, 0)); }
+    function redraw() { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height); drawAxes(); drawField(); trajectories.forEach(t => t.drawFull()); }
+    function zoom(f, px, py) { const center = mapFrom(px, py); const rx = (view.xMax - view.xMin) * f, ry = (view.yMax - view.yMin) * f; const fracX = (px - (canvas.getBoundingClientRect().left)) / canvas.width; const fracY = (py - (canvas.getBoundingClientRect().top)) / canvas.height; view.xMin = center.x - fracX * rx; view.xMax = center.x + (1 - fracX) * rx; view.yMin = center.y - fracY * ry; view.yMax = center.y + (1 - fracY) * ry; setup(); }
+    function animate() { if (isAnimating) { if (needsFullRedraw) { redraw(); needsFullRedraw = false; } if (++spawnC >= SPAWN) { const r = mapFrom(Math.random() * canvas.width, Math.random() * canvas.height); trajectories.push(new Traj(r.x, r.y)); spawnC = 0; } for (const t of trajectories) { const prev = t.h[t.i]; t.i < t.h.length - 1 ? t.i++ : (t.step(), t.i++); const curr = t.h[t.i]; if (prev && curr) { t.drawSegment(prev, curr); } } } else if (needsFullRedraw) { redraw(); needsFullRedraw = false; } requestAnimationFrame(animate); }
+    
+    // ---------- Event Handlers ----------
+    startStopBtn.onclick = () => { isAnimating = !isAnimating; startStopBtn.textContent = isAnimating ? 'Stop' : 'Start'; if (!isAnimating) { needsFullRedraw = true; redraw(); } };
+    resetBtn.onclick = () => { Object.assign(view, { xMin: -3, xMax: 3, yMin: -3, yMax: 3 }); setup(); init(); isAnimating = false; startStopBtn.textContent = 'Start'; needsFullRedraw = true; redraw(); };
+    clearBtn.onclick = () => { init(); needsFullRedraw = true; };
+    muSlider.oninput = e => { params.mu = +e.target.value; muValue.textContent = params.mu.toFixed(2); needsFullRedraw = true; };
+    canvas.onwheel = e => { e.preventDefault(); const zoomFactor = e.deltaY < 0 ? 0.9 : 1.1; zoom(zoomFactor, e.clientX, e.clientY); needsFullRedraw = true; };
+    canvas.onmousedown = e => { isPanning = true; lastX = e.clientX; lastY = e.clientY; clickTO = setTimeout(() => clickTO = null, 200); };
+    canvas.onmouseup = e => { isPanning = false; if (clickTO) { clearTimeout(clickTO); const r = canvas.getBoundingClientRect(); const { x, y } = mapFrom(e.clientX - r.left, e.clientY - r.top); trajectories.push(new Traj(x, y)); } };
+    canvas.onmouseleave = () => { isPanning = false; };
+    canvas.onmousemove = e => { if (!isPanning) return; if (clickTO) { clearTimeout(clickTO); clickTO = null; } const dx = e.clientX - lastX, dy = e.clientY - lastY; lastX = e.clientX; lastY = e.clientY; view.xMin -= dx / view.sX; view.xMax -= dx / view.sX; view.yMin += dy / view.sY; view.yMax += dy / view.sY; setup(); needsFullRedraw = true; };
+    window.onresize = () => { setup(); needsFullRedraw = true; };
+
+    // ---------- Boot ----------
+    setup(); init(); redraw(); requestAnimationFrame(animate);
+  </script>
+</body>
+</html>
+

@@ -10,19 +10,18 @@
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; line-height: 1.6; color: #333; background-color: #f9f9f9; margin: 0; }
-        header { background-color: #343a40; color: white; padding: 1.5rem; text-align: center; }
+        body { font-family: 'Inter', sans-serif; margin: 0; background-color: #f0f2f5; color: #1c1e21; }
+        header { background-color: #343a40; color: white; padding: 2rem; text-align: center; }
         header h1 { margin: 0; font-size: 2.5rem; }
         main { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
-        .iframe-container { position: relative; width: 100%; padding-top: 70%; /* Aspect Ratio */ border-radius: 8px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 2rem; }
-        .iframe-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
-        article { background-color: #fff; padding: 2rem; border-radius: 8px; box-schadow: 0 2px 4px rgba(0,0,0,0.05); }
-        h2 { border-bottom: 2px solid #eee; padding-bottom: .5rem; margin-top: 2rem; margin-bottom: 1rem; }
-        p, li { color: #555; }
-        code { background: #eee; padding: 2px 5px; border-radius: 4px; font-family: monospace; }
-        footer { text-align: center; padding: 2rem; margin-top: 2rem; background-color: #343a40; color: white; }
-        a { color: #007bff; }
-        a:hover { text-decoration: none; }
+        article { background-color: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { border-bottom: 2px solid #007bff; padding-bottom: 0.5rem; margin-top: 2rem; color: #007bff; }
+        p, li { line-height: 1.7; color: #495057; }
+        .iframe-container { position: relative; overflow: hidden; width: 100%; padding-top: 70%; /* 10:7 Aspect Ratio */ margin: 2rem 0; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .iframe-container iframe { position: absolute; top: 0; left: 0; bottom: 0; right: 0; width: 100%; height: 100%; border: none; }
+        footer { text-align: center; padding: 2rem; background-color: #343a40; color: white; margin-top: 2rem; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -30,14 +29,15 @@
         <h1>The Pendulum Phase Portrait</h1>
     </header>
     <main>
-        <div class="iframe-container">
-            <iframe src="embed.html" title="Interactive Pendulum Phase Portrait"></iframe>
-        </div>
         <article>
             <h2>Understanding the Visualization</h2>
             <p>
                 This interactive visualization explores the dynamics of a damped pendulum through its <strong>phase portrait</strong>. Instead of viewing the pendulum's motion over time, a phase portrait shows the relationship between its position (angle) and its velocity at every moment. This provides a powerful, geometric way to see all possible behaviors of the system at a glance.
             </p>
+
+            <div class="iframe-container">
+                <iframe src="embed.html" title="Interactive Pendulum Phase Portrait"></iframe>
+            </div>
 
             <h2>The Axes of Motion</h2>
             <p>
@@ -67,7 +67,7 @@
         </article>
     </main>
     <footer>
-        <p><a href="../../index.html">Back to Gallery</a> | &copy; 2025 Interactive Educational Visualizations</p>
+        <p>&copy; 2025 Interactive Educational Visualizations. | <a href="../../index.html">Back to Gallery</a></p>
     </footer>
 </body>
 </html>
