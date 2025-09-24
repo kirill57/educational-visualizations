@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pendulum Phase Portrait Explained</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; line-height: 1.6; color: #333; background-color: #f9f9f9; margin: 0; }
+        header { background-color: #343a40; color: white; padding: 1.5rem; text-align: center; }
+        header h1 { margin: 0; font-size: 2.5rem; }
+        main { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+        .iframe-container { position: relative; width: 100%; padding-top: 70%; /* Aspect Ratio */ border-radius: 8px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 2rem; }
+        .iframe-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+        article { background-color: #fff; padding: 2rem; border-radius: 8px; box-schadow: 0 2px 4px rgba(0,0,0,0.05); }
+        h2 { border-bottom: 2px solid #eee; padding-bottom: .5rem; margin-top: 2rem; margin-bottom: 1rem; }
+        p, li { color: #555; }
+        code { background: #eee; padding: 2px 5px; border-radius: 4px; font-family: monospace; }
+        footer { text-align: center; padding: 2rem; margin-top: 2rem; background-color: #343a40; color: white; }
+        a { color: #007bff; }
+        a:hover { text-decoration: none; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>The Pendulum Phase Portrait</h1>
+    </header>
+    <main>
+        <div class="iframe-container">
+            <iframe src="embed.html" title="Interactive Pendulum Phase Portrait"></iframe>
+        </div>
+        <article>
+            <h2>Understanding the Visualization</h2>
+            <p>
+                This interactive visualization explores the dynamics of a damped pendulum through its <strong>phase portrait</strong>. Instead of viewing the pendulum's motion over time, a phase portrait shows the relationship between its position (angle) and its velocity at every moment. This provides a powerful, geometric way to see all possible behaviors of the system at a glance.
+            </p>
+
+            <h2>The Axes of Motion</h2>
+            <p>
+                The two axes on the plot represent the state of the pendulum:
+            </p>
+            <ul>
+                <li>The horizontal axis, <strong>\(\theta\) (theta)</strong>, represents the angular position of the pendulum. \(\theta = 0\) is the pendulum hanging straight down. \(\theta = \pi\) and \(\theta = -\pi\) correspond to the pendulum being perfectly balanced upright.</li>
+                <li>The vertical axis, <strong>\(\omega\) (omega)</strong>, represents the angular velocity of the pendulum—how fast it's swinging. Positive \(\omega\) means it's swinging in one direction (e.g., counter-clockwise), and negative \(\omega\) means it's swinging in the other.</li>
+            </ul>
+
+            <h2>The Equations of Motion</h2>
+            <p>
+                The behavior of every trajectory on this plot is governed by a system of two first-order differential equations:
+            </p>
+            $$ \frac{d\theta}{dt} = \omega $$
+            $$ \frac{d\omega}{dt} = - \frac{g}{L}\sin(\theta) - \gamma\omega $$
+            <p>
+                The first equation simply states that the rate of change of angle is the angular velocity. The second equation describes how the angular velocity changes due to gravity (the \(-\sin(\theta)\) term) and friction or air resistance (the \(-\gamma\omega\) damping term). The parameter \(\gamma\) (gamma) is the <strong>damping coefficient</strong>, which you can control with the slider.
+            </p>
+
+            <h2>Interpreting the Trajectories</h2>
+            <ul>
+                <li><strong>Positive Damping (\(\gamma > 0\)):</strong> This represents a realistic pendulum with friction. Energy is removed from the system, so the pendulum eventually slows down. You can see this as the trajectories spiral inward toward the stable equilibrium point at \((\theta=0, \omega=0)\). This point is an <strong>attractor</strong>.</li>
+                <li><strong>Zero Damping (\(\gamma = 0\)):</strong> This is an idealized, frictionless pendulum. Energy is conserved, so the pendulum swings forever. The trajectories form closed loops, indicating periodic motion.</li>
+                <li><strong>Negative Damping (\(\gamma < 0\)):</strong> While the term 'negative damping' isn't a direct physical phenomenon, it can model a system where an external force continuously adds energy—for instance, a mechanism giving the pendulum a timed push on each swing. This causes the oscillations to grow, which you can see as the trajectories spiraling outward from the center.</li>
+            </ul>
+        </article>
+    </main>
+    <footer>
+        <p><a href="../../index.html">Back to Gallery</a> | &copy; 2025 Interactive Educational Visualizations</p>
+    </footer>
+</body>
+</html>
+

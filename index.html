@@ -35,7 +35,7 @@
         gap: 1.5rem;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         padding: 2rem;
-        max-width: 200px;
+        max-width: 1200px; /* Increased max-width for more cards */
         margin: 0 auto;
       }
       .card {
@@ -53,7 +53,7 @@
       }
       .card img {
         width: 100%;
-        height: 300px;
+        height: 200px; /* Adjusted height */
         object-fit: cover;
         background-color: #ddd;
       }
@@ -124,6 +124,28 @@
           </div>
         </div>
         <!-- End of Lorentz Attractor Card -->
+
+        <!-- Pendulum Phase Portrait Card -->
+        <div class="card">
+          <img
+            src="https://placehold.co/600x400/111827/FFF?text=Pendulum"
+            alt="Pendulum Phase Portrait visualization thumbnail"
+          />
+          <div class="card-content">
+            <h2>Pendulum Phase Portrait</h2>
+            <p>
+              Visualize the relationship between a pendulum's angle and
+              velocity. See how friction (damping) affects its motion, leading
+              to stable states or perpetual motion in this dynamic phase space.
+            </p>
+          </div>
+          <div class="links">
+            <a href="visualizations/pendulum-phase-portrait/index.html">Open Full</a>
+            <a href="visualizations/pendulum-phase-portrait/embed.html">Embed Version</a>
+          </div>
+        </div>
+        <!-- End of Pendulum Phase Portrait Card -->
+
       </section>
     </main>
     <footer>

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pendulum Phase Portrait</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    :root { --panel: rgba(31,41,55,.35); }
+    body{font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;margin:0;background:#111827;color:#f3f4f6;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow:hidden}
+    #wrap{position:relative;display:inline-block;box-shadow:0 0 20px rgba(0,191,255,.25);border:1px solid #374151;border-radius:.5rem}
+    canvas{background:#000;cursor:grab;display:block;border-radius:.5rem}
+    canvas:active{cursor:grabbing}
+    .controls{position:absolute;left:50%;bottom:.5rem;transform:translateX(-50%);display:flex;flex-direction:row;gap:.5rem;align-items:center;justify-content:center;background:var(--panel);backdrop-filter:blur(4px);padding:.25rem .5rem;border-radius:.5rem;pointer-events:none}
+    .controls>*{pointer-events:auto}
+    .btn{background:#374151;color:#f3f4f6;padding:.25rem .5rem;border:0;border-radius:.375rem;font-weight:600;font-size:.8rem;cursor:pointer;}
+    .btn:hover{background:#4b5563}
+    .range{width:100px;height:6px;background:#4b5563;border-radius:3px;outline:0;-webkit-appearance:none;appearance:none}
+    .range::-webkit-slider-thumb{width:14px;height:14px;background:#60a5fa;border-radius:50%;box-shadow:0 0 4px #60a5fa;-webkit-appearance:none;appearance:none}
+    .range::-moz-range-thumb{width:14px;height:14px;background:#60a5fa;border-radius:50%;box-shadow:0 0 4px #60a5fa}
+    .title{margin:1rem 0;text-align:center}
+    .title h1{font-size:2rem;font-weight:800;letter-spacing:-.02em;margin:.25rem 0}
+    .title p{color:#9ca3af;margin:0 auto;max-width:640px}
+
+    /* Modal Styles */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: none; justify-content: center; align-items: center; z-index: 1000; }
+    .modal-content { background: #1f2937; color: #f3f4f6; padding: 1rem; border-radius: .5rem; max-width: 600px; width: 90%; height: 80vh; display: flex; flex-direction: column; position: relative; border: 1px solid #374151; }
+    .modal-close { position: absolute; top: .75rem; right: .75rem; background: none; border: none; color: #9ca3af; font-size: 1.5rem; cursor: pointer; line-height: 1; }
+    .modal-close:hover { color: #fff; }
+    #explanationText { flex-grow: 1; overflow-y: auto; padding-right: .5rem; margin-bottom: 1rem; }
+    .loader { margin: 2rem auto; width: 40px; height: 40px; border: 4px solid #4b5563; border-top-color: #60a5fa; border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    
+    .message { padding: .75rem; border-radius: .5rem; margin-bottom: .5rem; line-height: 1.6; }
+    .message.model { background-color: #374151; }
+    .message.user { background-color: #4f46e5; color: #fff; text-align: right; }
+    
+    #followUpContainer { display: none; flex-shrink: 0; }
+    #followUpForm { display: flex; gap: .5rem; }
+    #followUpInput { flex-grow: 1; background: #374151; border: 1px solid #4b5563; color: #f3f4f6; padding: .5rem .75rem; border-radius: .375rem; }
+    #followUpInput:focus { outline: none; border-color: #60a5fa; }
+    #followUpBtn { background-color: #4f46e5; }
+    #followUpBtn:hover { background-color: #4338ca; }
+    #followUpBtn:disabled { background-color: #4b5563; cursor: not-allowed; }
+
+  </style>
+</head>
+<body>
+  <div class="title">
+    <h1>Pendulum Phase Portrait</h1>
+    <p>Click to add a trajectory. Drag to pan. Use the controls inside the plot.</p>
+  </div>
+
+  <div id="wrap">
+    <canvas id="phaseCanvas"></canvas>
+    <!-- Top-left equation panel inside the viewing area -->
+    <div id="equation" style="position:absolute;left:.5rem;top:.5rem;background:transparent;padding:.4rem .6rem;border-radius:.5rem;font-size:.9rem;line-height:1.2;pointer-events:none">
+      <div style="font-weight:700;margin-bottom:.25rem">Damped pendulum (phase form)</div>
+      <div style="white-space:pre; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;">
+        θ' = ω
+        ω' = - (g/L)·sin(θ) - γ·ω
+      </div>
+    </div>
+    <div class="controls">
+      <button id="startStopBtn" class="btn">Pause</button>
+      <button id="resetBtn" class="btn">Reset</button>
+      <button id="clearBtn" class="btn">Clear</button>
+      <button id="explainBtn" class="btn">✨ Explain Plot</button>
+      <label class="text-xs" style="opacity:.85">Damping: <span id="dampingValue">0.10</span></label>
+      <input id="dampingSlider" class="range" type="range" min="-0.5" max="0.5" step="0.01" value="0.1" />
+    </div>
+  </div>
+
+  <!-- Modal for Gemini Explanation -->
+  <div id="explanationModal" class="modal-overlay">
+    <div class="modal-content">
+      <button id="modalCloseBtn" class="modal-close">&times;</button>
+      <div id="explanationText">
+        <div id="initialLoader" class="loader"></div>
+      </div>
+      <div id="followUpContainer">
+        <form id="followUpForm">
+          <input type="text" id="followUpInput" placeholder="Ask a follow-up question..." autocomplete="off">
+          <button type="submit" id="followUpBtn" class="btn">Send</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // ---------- Elements & State ----------
+  const $=id=>document.getElementById(id);
+  const canvas=$('phaseCanvas'),ctx=canvas.getContext('2d');
+  const startStopBtn=$('startStopBtn'),resetBtn=$('resetBtn'),clearBtn=$('clearBtn'), explainBtn = $('explainBtn');
+  const dampingSlider=$('dampingSlider'),dampingValue=$('dampingValue');
+  const explanationModal = $('explanationModal'), modalCloseBtn = $('modalCloseBtn');
+  const explanationText = $('explanationText'), initialLoader = $('initialLoader');
+  const followUpContainer = $('followUpContainer'), followUpForm = $('followUpForm'), followUpInput = $('followUpInput'), followUpBtn = $('followUpBtn');
+
+  let isAnimating=true,isPanning=false,lastX=0,lastY=0,clickTO=null,spawnC=0,needsFullRedraw=true;
+  const SPAWN=60,params={gL:1,damping:.1,dt:.01},view={tMin:-2*Math.PI,tMax:2*Math.PI,oMin:-3,oMax:3,sX:1,sY:1};
+  let trajectories=[];
+  let conversationHistory = [];
+
+  // ---------- Coordinate Maps ----------
+  const mapTo=(th,om)=>({x:(th-view.tMin)*view.sX,y:canvas.height-(om-view.oMin)*view.sY});
+  const mapFrom=(x,y)=>({th:x/view.sX+view.tMin,om:(canvas.height-y)/view.sY+view.oMin});
+
+  // ---------- Trajectory ----------
+  class Traj{
+    constructor(th,om,m=500){ this.h=[{th,om}], this.i=0, this.m=m, this.c=`hsl(${Math.random()*360},90%,65%)`; }
+    step(){ let {th,om}=this.h[this.h.length-1]; om+=(-params.gL*Math.sin(th)-params.damping*om)*params.dt; th+=om*params.dt; this.h.push({th,om}); if(this.h.length>this.m){ this.h.shift(); this.i=Math.max(0,this.i-1);} }
+    drawFull(){
+      if(this.h.length<2) return; ctx.beginPath(); ctx.strokeStyle=this.c; ctx.lineWidth=1.3; ctx.globalAlpha=.9;
+      let s=0; for(let k=s+1;k<this.h.length;k++){ const a=mapTo(this.h[k-1].th,this.h[k-1].om), b=mapTo(this.h[k].th,this.h[k].om); if(Math.abs(a.x-b.x)<canvas.width*.9){ ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y);} }
+      ctx.stroke(); ctx.globalAlpha=1;
+    }
+    drawSegment(prev,curr){
+      const a=mapTo(prev.th,prev.om), b=mapTo(curr.th,curr.om); ctx.beginPath(); ctx.strokeStyle=this.c; ctx.lineWidth=1.3; ctx.globalAlpha=.95; if(Math.abs(a.x-b.x)<canvas.width*.9){ ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y);} ctx.stroke(); ctx.globalAlpha=1;
+    }
+  }
+
+  // ---------- Rendering ----------
+  function drawAxes(){
+    ctx.strokeStyle='#4b5563'; ctx.lineWidth=1;
+    const y0=mapTo(0,0).y; if(y0>=0&&y0<=canvas.height){ ctx.beginPath(); ctx.moveTo(0,y0); ctx.lineTo(canvas.width,y0); ctx.stroke(); }
+    for(let th=Math.ceil(view.tMin/(2*Math.PI))*(2*Math.PI); th<=view.tMax; th+=2*Math.PI){ const x=mapTo(th,0).x; if(x>=0&&x<=canvas.width){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke(); }}
+    ctx.fillStyle='#9ca3af'; ctx.font='12px system-ui, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillText('θ', Math.min(canvas.width-16, canvas.width-20), Math.min(canvas.height-16, y0+5));
+    const x0=mapTo(0,0).x; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText('ω', Math.min(canvas.width-16, x0+5), 12);
+  }
+
+  function drawField(){
+    const nx=40, ny=24;
+    const dxpx = canvas.width / nx, dypx = canvas.height / ny;
+    const L = 0.35 * Math.min(dxpx, dypx);
+    ctx.save(); ctx.strokeStyle='rgba(200,200,200,.6)'; ctx.lineWidth=1;
+    for(let i=0;i<=nx;i++){
+      for(let j=0;j<=ny;j++){
+        const th = view.tMin + (i/nx)*(view.tMax-view.tMin);
+        const om = view.oMin + (j/ny)*(view.oMax-view.oMin);
+        let v1 = om; let v2 = -params.gL*Math.sin(th) - params.damping*om;
+        const len = Math.hypot(v1, v2) || 1; v1/=len; v2/=len;
+        const p = mapTo(th, om);
+        const a = {x: p.x - L*v1, y: p.y + L*v2};
+        const b = {x: p.x + L*v1, y: p.y - L*v2};
+        ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+
+  function setup(){
+    const size=Math.min(innerWidth*.92,720); canvas.width=size; canvas.height=size*.72;
+    view.sX=canvas.width/(view.tMax-view.tMin); view.sY=canvas.height/(view.oMax-view.oMin);
+    needsFullRedraw=true;
+  }
+
+  function init(){
+    trajectories=[];
+    for(let i=-6;i<=6;i++) for(let j=-2;j<=2;j++){ if(i||j){ trajectories.push(new Traj(i*Math.PI/2, j*1.5)); } }
+  }
+
+  function redraw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#000'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    drawAxes(); 
+    drawField();
+    trajectories.forEach(t=>t.drawFull());
+  }
+
+  function zoom(f){
+    const cx=(view.tMin+view.tMax)/2, cy=(view.oMin+view.oMax)/2;
+    const rt=(view.tMax-view.tMin)*f, ro=(view.oMax-view.oMin)*f;
+    view.tMin=cx-rt/2; view.tMax=cx+rt/2; view.oMin=cy-ro/2; view.oMax=cy+ro/2;
+    setup();
+  }
+
+  function animate(){
+    if(isAnimating){
+      if(needsFullRedraw){ redraw(); needsFullRedraw=false; }
+      if(++spawnC>=SPAWN){ const r=mapFrom(Math.random()*canvas.width,Math.random()*canvas.height); trajectories.push(new Traj(r.th,r.om)); spawnC=0; }
+      for(const t of trajectories){
+        const prev = t.h[t.i];
+        t.i<t.h.length-1 ? t.i++ : (t.step(), t.i++);
+        const curr = t.h[t.i]; if(prev && curr){ t.drawSegment(prev, curr); }
+      }
+    } else if(needsFullRedraw){ redraw(); needsFullRedraw=false; }
+    requestAnimationFrame(animate);
+  }
+
+  // ---------- Gemini API Integration ----------
+  function renderConversation() {
+      explanationText.innerHTML = '';
+      conversationHistory.forEach(turn => {
+          const messageDiv = document.createElement('div');
+          messageDiv.classList.add('message', turn.role === 'user' ? 'user' : 'model');
+          messageDiv.innerHTML = turn.parts[0].text;
+          explanationText.appendChild(messageDiv);
+      });
+
+      if (window.MathJax) {
+          window.MathJax.typesetPromise([explanationText]).catch(err => console.error('MathJax error', err));
+      }
+      explanationText.scrollTop = explanationText.scrollHeight;
+  }
+
+  async function callGeminiAPI() {
+      const systemPrompt = `You are an expert physics and mathematics tutor. A user is looking at a phase portrait for a damped pendulum, which is a plot of angular velocity versus angular position. When you write formulas or mathematical variables, you MUST format them using LaTeX. Use \\(...\\) for inline math and $$...$$ for display math. For example, write angular velocity as \\(\\omega\\) and angular position as \\(\\theta\\). The governing equations are: $$\\theta' = \\omega$$ $$ \\omega' = - (g/L)\\cdot\\sin(\\theta) - \\gamma\\cdot\\omega $$ The g/L term is constant at 1.0. Keep your answers concise and focused on the user's question.`;
+      
+      const apiKey = ""; // Canvas will provide the key
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+      const payload = {
+          contents: conversationHistory,
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+      };
+
+      try {
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) throw new Error(`API call failed: ${response.status}`);
+        
+        const result = await response.json();
+        const candidate = result.candidates?.[0];
+
+        if (candidate && candidate.content?.parts?.[0]?.text) {
+            conversationHistory.push({ role: 'model', parts: [{ text: candidate.content.parts[0].text }] });
+        } else {
+            conversationHistory.push({ role: 'model', parts: [{ text: '<p>Sorry, I could not generate an explanation. Please try again.</p>' }] });
+            console.error('Unexpected API response structure:', result);
+        }
+      } catch (error) {
+          console.error("Error fetching explanation:", error);
+          conversationHistory.push({ role: 'model', parts: [{ text: `<p>An error occurred. Please check the console.</p>` }] });
+      } finally {
+          renderConversation();
+          followUpInput.disabled = false;
+          followUpBtn.disabled = false;
+          followUpInput.focus();
+          initialLoader.style.display = 'none';
+          followUpContainer.style.display = 'block';
+      }
+  }
+
+  // ---------- Events ----------
+  startStopBtn.onclick=()=>{ isAnimating=!isAnimating; startStopBtn.textContent=isAnimating?'Pause':'Resume'; if(!isAnimating){ needsFullRedraw=true; redraw(); } };
+  resetBtn.onclick=()=>{ Object.assign(view,{tMin:-2*Math.PI,tMax:2*Math.PI,oMin:-3,oMax:3}); setup(); init(); isAnimating=true; startStopBtn.textContent='Pause'; needsFullRedraw=true; };
+  clearBtn.onclick=()=>{ init(); needsFullRedraw=true; };
+  dampingSlider.oninput=e=>{ params.damping=+e.target.value; dampingValue.textContent=params.damping.toFixed(2); needsFullRedraw=true; };
+
+  explainBtn.onclick = () => {
+    explanationModal.style.display = 'flex';
+    initialLoader.style.display = 'block';
+    explanationText.innerHTML = '';
+    followUpContainer.style.display = 'none';
+    
+    conversationHistory = [];
+    const initialQuery = `The user has set the damping coefficient (\\(\\gamma\\)) to ${params.damping.toFixed(2)}. Please provide a clear, concise, and easy-to-understand explanation of what the phase portrait is showing, formatted in HTML with paragraphs (<p>) and lists (<ul><li>). Explain: 1. What the axes represent. 2. What a single trajectory represents. 3. The behavior of the system based on the current damping value. 4. Any interesting features like stable or unstable points.`;
+    conversationHistory.push({ role: 'user', parts: [{ text: initialQuery }] });
+    
+    callGeminiAPI();
+  };
+  
+  followUpForm.onsubmit = (e) => {
+    e.preventDefault();
+    const userText = followUpInput.value.trim();
+    if (!userText) return;
+
+    conversationHistory.push({ role: 'user', parts: [{ text: userText }] });
+    renderConversation();
+    followUpInput.value = '';
+    followUpInput.disabled = true;
+    followUpBtn.disabled = true;
+
+    // Add a temporary loader for the model's response
+    const thinkingMessage = document.createElement('div');
+    thinkingMessage.classList.add('message', 'model');
+    thinkingMessage.innerHTML = '<div class="loader" style="width:20px;height:20px;margin:0;"></div>';
+    explanationText.appendChild(thinkingMessage);
+    explanationText.scrollTop = explanationText.scrollHeight;
+
+    callGeminiAPI();
+  };
+
+  modalCloseBtn.onclick = () => { explanationModal.style.display = 'none'; };
+  explanationModal.onclick = (e) => { if (e.target === explanationModal) { explanationModal.style.display = 'none'; }};
+
+  canvas.onwheel = e => {
+    e.preventDefault();
+    const zoomFactor = e.deltaY < 0 ? 0.9 : 1.1;
+    zoom(zoomFactor);
+    needsFullRedraw = true;
+  };
+  canvas.onmousedown=e=>{ isPanning=true; lastX=e.clientX; lastY=e.clientY; clickTO=setTimeout(()=>clickTO=null,200); };
+  canvas.onmouseup=e=>{ isPanning=false; if(clickTO){ clearTimeout(clickTO); const r=canvas.getBoundingClientRect(); const {th,om}=mapFrom(e.clientX-r.left, e.clientY-r.top); trajectories.push(new Traj(th,om)); } };
+  canvas.onmouseleave=()=>{ isPanning=false; };
+  canvas.onmousemove=e=>{ if(!isPanning) return; if(clickTO){ clearTimeout(clickTO); clickTO=null; } const dx=e.clientX-lastX, dy=e.clientY-lastY; lastX=e.clientX; lastY=e.clientY; view.tMin-=dx/view.sX; view.tMax-=dx/view.sX; view.oMin+=dy/view.sY; view.oMax+=dy/view.sY; setup(); needsFullRedraw=true; };
+  onresize=()=>{ setup(); needsFullRedraw=true; };
+
+  // ---------- Boot & Tiny Sanity Tests ----------
+  setup(); init(); redraw();
+  console.assert(typeof drawField==='function', 'drawField should exist');
+  console.assert(!Number.isNaN(mapTo(0,0).x), 'mapTo should return finite coords');
+  requestAnimationFrame(animate);
+  </script>
+</body>
+</html>
+
+
+
