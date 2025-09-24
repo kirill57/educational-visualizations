@@ -63,7 +63,7 @@
       </div>
     </div>
     <div class="controls">
-      <button id="startStopBtn" class="btn">Pause</button>
+      <button id="startStopBtn" class="btn">Start</button>
       <button id="resetBtn" class="btn">Reset</button>
       <button id="clearBtn" class="btn">Clear</button>
       <button id="explainBtn" class="btn">✨ Explain Plot</button>
@@ -98,7 +98,7 @@
   const explanationText = $('explanationText'), initialLoader = $('initialLoader');
   const followUpContainer = $('followUpContainer'), followUpForm = $('followUpForm'), followUpInput = $('followUpInput'), followUpBtn = $('followUpBtn');
 
-  let isAnimating=true,isPanning=false,lastX=0,lastY=0,clickTO=null,spawnC=0,needsFullRedraw=true;
+  let isAnimating=false,isPanning=false,lastX=0,lastY=0,clickTO=null,spawnC=0,needsFullRedraw=true;
   const SPAWN=60,params={gL:1,damping:.1,dt:.01},view={tMin:-2*Math.PI,tMax:2*Math.PI,oMin:-3,oMax:3,sX:1,sY:1};
   let trajectories=[];
   let conversationHistory = [];
@@ -249,8 +249,8 @@
   }
 
   // ---------- Events ----------
-  startStopBtn.onclick=()=>{ isAnimating=!isAnimating; startStopBtn.textContent=isAnimating?'Pause':'Resume'; if(!isAnimating){ needsFullRedraw=true; redraw(); } };
-  resetBtn.onclick=()=>{ Object.assign(view,{tMin:-2*Math.PI,tMax:2*Math.PI,oMin:-3,oMax:3}); setup(); init(); isAnimating=true; startStopBtn.textContent='Pause'; needsFullRedraw=true; };
+  startStopBtn.onclick=()=>{ isAnimating=!isAnimating; startStopBtn.textContent=isAnimating?'Stop':'Start'; if(!isAnimating){ needsFullRedraw=true; redraw(); } };
+  resetBtn.onclick=()=>{ Object.assign(view,{tMin:-2*Math.PI,tMax:2*Math.PI,oMin:-3,oMax:3}); setup(); init(); isAnimating=true; startStopBtn.textContent='Stop'; needsFullRedraw=true; };
   clearBtn.onclick=()=>{ init(); needsFullRedraw=true; };
   dampingSlider.oninput=e=>{ params.damping=+e.target.value; dampingValue.textContent=params.damping.toFixed(2); needsFullRedraw=true; };
 
@@ -311,6 +311,7 @@
   </script>
 </body>
 </html>
+
 
 
 
