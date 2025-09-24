@@ -122,14 +122,12 @@
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-        // --- Animation State ---
-        let isAnimating = false; // Start static
-        let timeDirection = 1; // 1 for forward, -1 for backward
+        let isAnimating = false;
+        let timeDirection = 1;
         const speedSettings = [0.1, 0.25, 0.5, 0.75, 1, 2, 4, 8, 16, 32];
-        let currentSpeedIndex = 4; // Default to 1x speed
+        let currentSpeedIndex = 4;
         let frameCounter = 0;
 
-        // --- Basic Setup ---
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -137,31 +135,60 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // --- Controls ---
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
-        controls.screenSpacePanning = false;
-        controls.minDistance = 1;
-        controls.maxDistance = 200;
-        controls.autoRotate = false; // No auto-rotate until started
-        controls.autoRotateSpeed = 0.5;
+        controls.autoRotate = false;
 
-        // --- Lighting ---
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
         scene.add(ambientLight);
         const pointLight = new THREE.PointLight(0xffffff, 1);
         scene.add(pointLight);
 
-        // Set initial camera position
         camera.position.set(0, 10, 60);
         camera.lookAt(scene.position);
 
-        // --- Lorentz Attractor Parameters ---
-        const sigma = 10;
-        const rho = 28;
-        const beta = 8.0 / 3.0;
-        const dt = 0.01;
+        const sigma = 10, rho = 28, beta = 8.0 / 3.0, dt = 0.01;
+
+        // --- Vector Field Visualization ---
+        function drawVectorField() {
+            const fieldGroup = new THREE.Group();
+            const density = 10;
+            const size = 60;
+            const arrowLength = 2.5;
+            const step = size / density;
+
+            for (let i = 0; i < density; i++) {
+                for (let j = 0; j < density; j++) {
+                    for (let k = 0; k < density; k++) {
+                        const x = -size/2 + i * step;
+                        const y = -size/2 + j * step;
+                        const z = k * step; // Z starts from 0
+
+                        const origin = new THREE.Vector3(x, y, z);
+                        
+                        const dx = sigma * (y - x);
+                        const dy = x * (rho - z) - y;
+                        const dz = x * y - beta * z;
+                        
+                        const dir = new THREE.Vector3(dx, dy, dz).normalize();
+                        
+                        const arrow = new THREE.ArrowHelper(dir, origin, arrowLength, 0xaaaaaa, 0.4, 0.2);
+                        // Make arrow material transparent
+                        arrow.line.material.transparent = true;
+                        arrow.line.material.opacity = 0.25;
+                        arrow.cone.material.transparent = true;
+                        arrow.cone.material.opacity = 0.25;
+                        
+                        fieldGroup.add(arrow);
+                    }
+                }
+            }
+            // Center the group
+            fieldGroup.position.y = -5; // Adjust position to better center the attractor
+            scene.add(fieldGroup);
+        }
+
 
         // --- Trajectory Class ---
         class Trajectory {
@@ -180,10 +207,7 @@
                 const sphereGeometry = new THREE.SphereGeometry(0.2, 8, 8);
                 for (let i = 0; i < this.trailLength; i++) {
                     const material = new THREE.MeshStandardMaterial({ 
-                        color: 0xffffff, 
-                        emissive: 0x000000,
-                        metalness: 0.1,
-                        roughness: 0.5,
+                        color: 0xffffff, emissive: 0x000000, metalness: 0.1, roughness: 0.5
                     });
                     const sphere = new THREE.Mesh(sphereGeometry, material);
                     sphere.scale.set(0, 0, 0);
@@ -258,7 +282,6 @@
             }
         }
 
-        // --- Create Trajectories ---
         const trajectories = [
             new Trajectory(new THREE.Vector3(0.1, 0, 0), 0.55),
             new Trajectory(new THREE.Vector3(0.11, 0, 0), 0.0),
@@ -270,13 +293,12 @@
         scene.add(group);
         trajectories.forEach(t => t.spheres.forEach(s => group.add(s)));
 
-        // --- UI Controls ---
-        const startStopBtn = document.getElementById('startStopBtn');
-        const slowerBtn = document.getElementById('slowerBtn');
-        const fasterBtn = document.getElementById('fasterBtn');
-        const speedDisplay = document.getElementById('speedDisplay');
-        const resetBtn = document.getElementById('resetBtn');
-        const reverseBtn = document.getElementById('reverseBtn');
+        const startStopBtn = document.getElementById('startStopBtn'),
+              slowerBtn = document.getElementById('slowerBtn'),
+              fasterBtn = document.getElementById('fasterBtn'),
+              speedDisplay = document.getElementById('speedDisplay'),
+              resetBtn = document.getElementById('resetBtn'),
+              reverseBtn = document.getElementById('reverseBtn');
         
         function updateSpeedDisplay() {
             speedDisplay.textContent = `${speedSettings[currentSpeedIndex]}x`;
@@ -309,13 +331,11 @@
             updateSpeedDisplay();
             timeDirection = 1;
             reverseBtn.textContent = 'Reverse';
-
             isAnimating = false;
             startStopBtn.textContent = 'Start';
             controls.autoRotate = false;
         });
 
-        // --- Animation Loop ---
         function animate() {
             requestAnimationFrame(animate);
 
@@ -323,9 +343,7 @@
                 const speed = speedSettings[currentSpeedIndex];
 
                 if (speed >= 1) {
-                    for (let i = 0; i < speed; i++) {
-                        trajectories.forEach(t => t.update(timeDirection));
-                    }
+                    for (let i = 0; i < speed; i++) trajectories.forEach(t => t.update(timeDirection));
                 } else {
                     frameCounter++;
                     if (frameCounter >= 1 / speed) {
@@ -348,8 +366,11 @@
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
-
+        
+        drawVectorField(); // Create the vector field
         animate();
     </script>
 </body>
 </html>
+
+
