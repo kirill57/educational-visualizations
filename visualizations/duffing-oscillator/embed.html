@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Duffing Oscillator</title>
+    <style>
+        :root { --panel: rgba(31,41,55,.35); }
+        body{font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;margin:0;background:#111827;color:#f3f4f6;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow:hidden}
+        #wrap{position:relative;display:inline-block;box-shadow:0 0 20px rgba(96, 165, 250,.25);border:1px solid #374151;border-radius:.5rem}
+        canvas{background:#000;cursor:grab;display:block;border-radius:.5rem}
+        canvas:active{cursor:grabbing}
+        .controls{position:absolute;left:50%;bottom:.5rem;transform:translateX(-50%);display:flex;flex-direction:row;gap:.5rem;align-items:center;justify-content:center;background:var(--panel);backdrop-filter:blur(4px);padding:.25rem .5rem;border-radius:.5rem;pointer-events:none}
+        .controls>*{pointer-events:auto}
+        .btn{background:#374151;color:#f3f4f6;padding:.25rem .5rem;border:0;border-radius:.375rem;font-weight:600;font-size:.8rem;cursor:pointer;}
+        .btn:hover{background:#4b5563}
+        .range{width:100px;height:6px;background:#4b5563;border-radius:3px;outline:0;-webkit-appearance:none;appearance:none}
+        .range::-webkit-slider-thumb{width:14px;height:14px;background:#60a5fa;border-radius:50%;box-shadow:0 0 4px #60a5fa;-webkit-appearance:none;appearance:none}
+        .range::-moz-range-thumb{width:14px;height:14px;background:#60a5fa;border-radius:50%;box-shadow:0 0 4px #60a5fa}
+        label { font-size: 0.8rem; opacity: .85; color: #f3f4f6; }
+        .title{margin:1rem 0;text-align:center}
+        .title h1{font-size:2rem;font-weight:800;letter-spacing:-.02em;margin:.25rem 0}
+        .title p{color:#9ca3af;margin:0 auto;max-width:640px}
+    </style>
+</head>
+<body>
+    <div class="title">
+        <h1>Duffing Oscillator</h1>
+        <p>Click to add a trajectory. Drag to pan. Scroll to zoom.</p>
+    </div>
+
+    <div id="wrap">
+        <canvas id="phaseCanvas"></canvas>
+        <div id="equation" style="position:absolute; left:.5rem; top:.5rem; background:transparent; padding:.4rem .6rem; border-radius:.5rem; font-size:.9rem; line-height:1.2; pointer-events:none; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; white-space: pre;">
+            x' = y
+            y' = x - x³ - δy
+        </div>
+        <div class="controls">
+            <button id="startStopBtn" class="btn">Start</button>
+            <button id="resetBtn" class="btn">Reset</button>
+            <button id="clearBtn" class="btn">Clear</button>
+            <label>δ: <span id="deltaValue">0.25</span></label>
+            <input id="deltaSlider" class="range" type="range" min="0" max="0.5" step="0.01" value="0.25" />
+        </div>
+    </div>
+    <script>
+        const $ = id => document.getElementById(id);
+        const canvas = $('phaseCanvas'), ctx = canvas.getContext('2d');
+        const startStopBtn = $('startStopBtn'), resetBtn = $('resetBtn'), clearBtn = $('clearBtn');
+        const deltaSlider = $('deltaSlider'), deltaValue = $('deltaValue');
+
+        let isAnimating = false, isPanning = false, lastX = 0, lastY = 0, clickTO = null, spawnC = 0, needsFullRedraw = true;
+        const SPAWN = 120; // Slower spawn rate for this oscillator
+        const params = { delta: 0.25, dt: 0.01 };
+        const view = { xMin: -2.2, xMax: 2.2, yMin: -1.5, yMax: 1.5, sX: 1, sY: 1 };
+        let trajectories = [];
+
+        const mapTo = (x, y) => ({ px: (x - view.xMin) * view.sX, py: canvas.height - (y - view.yMin) * view.sY });
+        const mapFrom = (px, py) => ({ x: px / view.sX + view.xMin, y: (canvas.height - py) / view.sY + view.yMin });
+
+        class Trajectory {
+            constructor(x, y, trailLength = 1500) {
+                this.history = [{ x, y }];
+                this.trailLength = trailLength;
+                this.color = `hsl(${Math.random() * 360}, 90%, 65%)`;
+            }
+            step() {
+                let { x, y } = this.history[this.history.length - 1];
+                const dx = y;
+                const dy = x - x * x * x - params.delta * y;
+                x += dx * params.dt;
+                y += dy * params.dt;
+                this.history.push({ x, y });
+                if (this.history.length > this.trailLength) {
+                    this.history.shift();
+                }
+            }
+            drawFull() {
+                if (this.history.length < 2) return;
+                ctx.beginPath();
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = 1.2;
+                ctx.globalAlpha = 0.8;
+                const startPoint = mapTo(this.history[0].x, this.history[0].y);
+                ctx.moveTo(startPoint.px, startPoint.py);
+                for (let i = 1; i < this.history.length; i++) {
+                    const point = mapTo(this.history[i].x, this.history[i].y);
+                    ctx.lineTo(point.px, point.py);
+                }
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        function drawAxes() {
+            ctx.strokeStyle = '#4b5563';
+            ctx.lineWidth = 1;
+            const origin = mapTo(0, 0);
+            if (origin.py >= 0 && origin.py <= canvas.height) {
+                ctx.beginPath(); ctx.moveTo(0, origin.py); ctx.lineTo(canvas.width, origin.py); ctx.stroke();
+            }
+            if (origin.px >= 0 && origin.px <= canvas.width) {
+                ctx.beginPath(); ctx.moveTo(origin.px, 0); ctx.lineTo(origin.px, canvas.height); ctx.stroke();
+            }
+            ctx.fillStyle = '#9ca3af'; ctx.font = '12px system-ui';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+            ctx.fillText('x', canvas.width - 15, origin.py + 5);
+            ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+            ctx.fillText('y', origin.px + 5, 12);
+        }
+        
+        function drawField(){
+            const nx=35, ny=25;
+            const dxpx = canvas.width / nx, dypx = canvas.height / ny;
+            const L = 0.35 * Math.min(dxpx, dypx);
+            ctx.save(); ctx.strokeStyle='rgba(200,200,200,.6)'; ctx.lineWidth=1;
+            for(let i=0;i<=nx;i++){
+                for(let j=0;j<=ny;j++){
+                    const x = view.xMin + (i/nx)*(view.xMax-view.xMin);
+                    const y = view.yMin + (j/ny)*(view.yMax-view.yMin);
+                    let v1 = y; 
+                    let v2 = x - x*x*x - params.delta*y;
+                    const len = Math.hypot(v1, v2) || 1; v1/=len; v2/=len;
+                    const p = mapTo(x, y);
+                    const scaleX = view.sX / view.sY; // Correct for aspect ratio
+                    const a = {px: p.px - L*v1*scaleX, py: p.py + L*v2};
+                    const b = {px: p.px + L*v1*scaleX, py: p.py - L*v2};
+                    ctx.beginPath(); ctx.moveTo(a.px,a.py); ctx.lineTo(b.px,b.py); ctx.stroke();
+                }
+            }
+            ctx.restore();
+        }
+
+        function setup() {
+            const size = Math.min(innerWidth * .92, 720);
+            const aspectRatio = (view.xMax - view.xMin) / (view.yMax - view.yMin);
+            canvas.width = size;
+            canvas.height = size / aspectRatio;
+            view.sX = canvas.width / (view.xMax - view.xMin);
+            view.sY = canvas.height / (view.yMax - view.yMin);
+            needsFullRedraw = true;
+        }
+
+        function init() {
+            trajectories = [
+                new Trajectory(1, 0.5),
+                new Trajectory(-1, -0.5),
+                new Trajectory(0.1, 0.1)
+            ];
+            needsFullRedraw = true;
+        }
+
+        function redraw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawAxes();
+            drawField();
+            trajectories.forEach(t => t.drawFull());
+        }
+
+        function zoom(f) {
+            const cx = (view.xMin + view.xMax) / 2, cy = (view.yMin + view.yMax) / 2;
+            const rx = (view.xMax - view.xMin) * f, ry = (view.yMax - view.yMin) * f;
+            view.xMin = cx - rx / 2; view.xMax = cx + rx / 2;
+            view.yMin = cy - ry / 2; view.yMax = cy + ry / 2;
+            setup();
+        }
+
+        function animate() {
+            if (isAnimating) {
+                if (++spawnC >= SPAWN) {
+                    const r = mapFrom(Math.random() * canvas.width, Math.random() * canvas.height);
+                    trajectories.push(new Trajectory(r.x, r.y));
+                    spawnC = 0;
+                }
+                for (let i = 0; i < 2; i++) { // Step twice for smoother animation
+                    trajectories.forEach(t => t.step());
+                }
+                redraw();
+            } else if (needsFullRedraw) {
+                redraw();
+                needsFullRedraw = false;
+            }
+            requestAnimationFrame(animate);
+        }
+
+        startStopBtn.onclick = () => {
+            isAnimating = !isAnimating;
+            startStopBtn.textContent = isAnimating ? 'Stop' : 'Start';
+        };
+        resetBtn.onclick = () => {
+            Object.assign(view, { xMin: -2.2, xMax: 2.2, yMin: -1.5, yMax: 1.5 });
+            setup();
+            init();
+            isAnimating = false;
+            startStopBtn.textContent = 'Start';
+            needsFullRedraw = true;
+            redraw();
+        };
+        clearBtn.onclick = () => {
+            trajectories = [];
+            needsFullRedraw = true;
+        };
+        deltaSlider.oninput = e => {
+            params.delta = +e.target.value;
+            deltaValue.textContent = params.delta.toFixed(2);
+            needsFullRedraw = true;
+        };
+        canvas.onwheel = e => {
+            e.preventDefault();
+            const zoomFactor = e.deltaY < 0 ? 0.9 : 1.1;
+            zoom(zoomFactor);
+            needsFullRedraw = true;
+        };
+        canvas.onmousedown = e => {
+            isPanning = true; lastX = e.clientX; lastY = e.clientY;
+            clickTO = setTimeout(() => clickTO = null, 200);
+        };
+        canvas.onmouseup = e => {
+            isPanning = false;
+            if (clickTO) {
+                clearTimeout(clickTO);
+                const r = canvas.getBoundingClientRect();
+                const { x, y } = mapFrom(e.clientX - r.left, e.clientY - r.top);
+                trajectories.push(new Trajectory(x, y));
+                needsFullRedraw = true;
+            }
+        };
+        canvas.onmouseleave = () => isPanning = false;
+        canvas.onmousemove = e => {
+            if (!isPanning) return;
+            if (clickTO) { clearTimeout(clickTO); clickTO = null; }
+            const dx = e.clientX - lastX, dy = e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            view.xMin -= dx / view.sX; view.xMax -= dx / view.sX;
+            view.yMin += dy / view.sY; view.yMax += dy / view.sY;
+            setup();
+            needsFullRedraw = true;
+        };
+        window.onresize = setup;
+
+        setup();
+        init();
+        redraw();
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>
+
+
