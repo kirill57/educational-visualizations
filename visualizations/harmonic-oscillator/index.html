@@ -1,0 +1,85 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Harmonic Oscillator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; margin: 0; background-color: #f0f2f5; color: #1c1e21; }
+        header { background-color: #343a40; color: white; padding: 2rem; text-align: center; }
+        header h1 { margin: 0; font-size: 2.5rem; }
+        main { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+        article { background-color: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { border-bottom: 2px solid #007bff; padding-bottom: 0.5rem; margin-top: 2rem; color: #007bff; }
+        p, li { line-height: 1.7; color: #495057; }
+        .iframe-container { position: relative; overflow: hidden; width: 100%; padding-top: 70%; margin: 2rem 0; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .iframe-container iframe { position: absolute; top: 0; left: 0; bottom: 0; right: 0; width: 100%; height: 100%; border: none; }
+        footer { text-align: center; padding: 2rem; background-color: #343a40; color: white; margin-top: 2rem; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>The Harmonic Oscillator</h1>
+        <p>From simple vibrations to resonance, the harmonic oscillator sits at the heart of mathematical physics.</p>
+    </header>
+    <main>
+        <article>
+            <h2>Why This System Matters</h2>
+            <p>
+                The harmonic oscillator is the workhorse of differential equations. Whether you are modeling a mass on a spring, the small-angle motion of a pendulum, current in an LC circuit, or even vibrations of molecules, you start with the same core idea: a restoring force that pulls the system back toward equilibrium and is proportional to the displacement.
+            </p>
+            <p>
+                In the linear regime this restoring force produces sinusoidal motion that never grows or decays. Add a little friction and the motion fades away. Add the right kind of periodic input and the response can build dramatically. All of those cases live inside the visualization below.
+            </p>
+
+            <div class="iframe-container">
+                <iframe src="embed.html" title="Interactive Harmonic Oscillator Visualization"></iframe>
+            </div>
+
+            <h2>The Governing Equation</h2>
+            <p>
+                With mass scaled to one, the damped and driven harmonic oscillator satisfies
+            </p>
+            $$\frac{d^2 x}{dt^2} + 2\zeta\,\omega_0\,\frac{dx}{dt} + \omega_0^2 x = F\cos(\Omega t).$$
+            <p>
+                The parameters mean:
+            </p>
+            <ul>
+                <li><strong>\(\omega_0\)</strong> is the natural frequency. It sets the pace the system would oscillate without damping or forcing.</li>
+                <li><strong>\(\zeta\)</strong> is the dimensionless damping ratio, which defines the system's behavior:
+                    <ul>
+                        <li><strong>Underdamped (\(0 < \zeta < 1\)):</strong> The system oscillates, but the amplitude decays over time.</li>
+                        <li><strong>Critically Damped (\(\zeta = 1\)):</strong> The system returns to equilibrium as fast as possible without any oscillation.</li>
+                        <li><strong>Overdamped (\(\zeta > 1\)):</strong> The system returns to equilibrium slowly and without oscillating.</li>
+                    </ul>
+                </li>
+                <li><strong>\(F\)</strong> and <strong>\(\Omega\)</strong> control the amplitude and frequency of an external periodic drive.</li>
+            </ul>
+
+            <h2>What to Explore</h2>
+            <p>
+                Use the controls in the simulation to investigate classic behaviours:
+            </p>
+            <ul>
+                <li>Set the forcing to <em>None</em> and vary the damping ratio to see the transition from persistent oscillations to heavy decay.</li>
+                <li>Switch on the cosine drive, then sweep the drive frequency. Notice how the amplitude peaks when \(\Omega\) approaches \(\omega_0\): this is resonance.</li>
+                <li>Start with a large initial displacement and introduce gentle damping to watch energy trade between kinetic and potential forms over time.</li>
+            </ul>
+
+            <p>
+                These ideas extend far beyond a spring and mass. Quantum oscillators, atoms in a lattice, and even the modes of a drumhead reduce to this same equation with different interpretations of the parameters.
+            </p>
+        </article>
+    </main>
+    <footer>
+        <p>&copy; 2025 Interactive Educational Visualizations. | <a href="../../index.html">Back to Gallery</a></p>
+    </footer>
+</body>
+</html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -21,6 +21,19 @@
     .title h1{font-size:2rem;font-weight:800;letter-spacing:-.02em;margin:.25rem 0}
     .title p{color:#9ca3af;margin:0 auto;max-width:640px}
   </style>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]],
+                displayMath: [["$$","$$"], ["\\[","\\]"]]
+            },
+            options: {
+                skipHtmlTags: ["script","noscript","style","textarea","pre","code"]
+            }
+        };
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
   <div class="title">
@@ -33,8 +46,8 @@
     <div id="equation" style="position:absolute;left:.5rem;top:.5rem;background:transparent;padding:.4rem .6rem;border-radius:.5rem;font-size:.9rem;line-height:1.2;pointer-events:none">
       <div style="font-weight:700;margin-bottom:.25rem">Damped pendulum (phase form)</div>
       <div style="white-space:pre; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;">
-        θ' = ω
-        ω' = - (g/L)·sin(θ) - γ·ω
+        \( \dot{\theta} = \omega \)
+        \( \dot{\omega} = -\tfrac{g}{L}\sin\theta - \gamma\,\omega \)
       </div>
     </div>
     <div class="controls">
@@ -81,8 +94,8 @@
     const y0=mapTo(0,0).y; if(y0>=0&&y0<=canvas.height){ ctx.beginPath(); ctx.moveTo(0,y0); ctx.lineTo(canvas.width,y0); ctx.stroke(); }
     for(let th=Math.ceil(view.tMin/(2*Math.PI))*(2*Math.PI); th<=view.tMax; th+=2*Math.PI){ const x=mapTo(th,0).x; if(x>=0&&x<=canvas.width){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke(); }}
     ctx.fillStyle='#9ca3af'; ctx.font='12px system-ui, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='top';
-    ctx.fillText('θ', Math.min(canvas.width-16, canvas.width-20), Math.min(canvas.height-16, y0+5));
-    const x0=mapTo(0,0).x; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText('ω', Math.min(canvas.width-16, x0+5), 12);
+    ctx.fillText('Î¸', Math.min(canvas.width-16, canvas.width-20), Math.min(canvas.height-16, y0+5));
+    const x0=mapTo(0,0).x; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText('Ï‰', Math.min(canvas.width-16, x0+5), 12);
   }
 
   function drawField(){

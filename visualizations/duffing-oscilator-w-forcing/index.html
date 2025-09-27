@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Forced Duffing Oscillator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; margin: 0; background-color: #f0f2f5; color: #1c1e21; }
+        header { background-color: #312e81; color: white; padding: 2rem; text-align: center; }
+        header h1 { margin: 0; font-size: 2.5rem; }
+        main { max-width: 960px; margin: 2rem auto; padding: 0 1rem; }
+        article { background-color: white; padding: 2.5rem 2rem; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        h2 { border-bottom: 2px solid #4f46e5; padding-bottom: 0.5rem; margin-top: 2rem; color: #4f46e5; }
+        p, li { line-height: 1.7; color: #3f3f46; }
+        ul { padding-left: 1.2rem; }
+        .iframe-container { position: relative; overflow: hidden; width: 100%; padding-top: 70%; margin: 2rem 0; border: 1px solid #d4d4d8; border-radius: 10px; box-shadow: 0 2px 10px rgba(15, 23, 42, 0.1); }
+        .iframe-container iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; border-radius: 10px; }
+        .callout { background: #eef2ff; border-left: 4px solid #4f46e5; padding: 1rem 1.5rem; border-radius: 0 10px 10px 0; margin: 1.5rem 0; color: #312e81; }
+        footer { text-align: center; padding: 2.5rem; background-color: #1f2937; color: white; margin-top: 3rem; }
+        footer a { color: #a5b4fc; text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Forced Duffing Oscillator</h1>
+        <p>When a nonlinear spring meets periodic driving, chaos is never far behind.</p>
+    </header>
+    <main>
+        <article>
+            <h2>Driving a Nonlinear Oscillator</h2>
+            <p>
+                The Duffing oscillator augments the familiar mass-spring model with a nonlinear restoring force. When we introduce a periodic driving term on top of that nonlinearity,
+                the system can wander between orderly, periodic motion and wildly chaotic trajectories. The equation of motion is
+            </p>
+            <div class="callout">
+                $$ \ddot{x} + \delta \dot{x} + \beta x + \alpha x^3 = F_0 \cos(\omega t) $$
+            </div>
+            <p>
+                where \(x\) is displacement, \(\delta\) controls damping, \(\beta\) and \(\alpha\) set the shape of the double-well potential, and the forcing amplitude \(F_0\) and frequency \(\omega\)
+                continually pump energy into the oscillator. Competing influences between damping, nonlinearity, and driving energy make the phase portrait especially rich.
+            </p>
+
+            <div class="iframe-container">
+                <iframe src="duffing-oscilator-w-forcing.html" title="Forced Duffing Oscillator Interactive Explorer"></iframe>
+            </div>
+
+            <h2>Parameters You Can Tune</h2>
+            <ul>
+                <li><strong>Damping (\(\delta\)):</strong> Larger values bleed energy faster, calming chaotic swings; low damping allows long-lived transients.</li>
+                <li><strong>Linear stiffness (\(\beta\)):</strong> Shapes the quadratic part of the potential. Negative values create two wells separated by an unstable equilibrium.</li>
+                <li><strong>Nonlinear stiffness (\(\alpha\)):</strong> Controls how steep the wells become away from the origin. Increasing \(\alpha\) accentuates the double-well behavior.</li>
+                <li><strong>Forcing amplitude (\(F_0\)):</strong> Determines how hard the system is driven. Even modest increases can trigger period doubling cascades.</li>
+                <li><strong>Forcing frequency (\(\omega\)):</strong> Sets how quickly the driver oscillates. Matching natural frequencies can lead to resonance, while mismatches create intricate beats.</li>
+                <li><strong>View range:</strong> Adjust the window on phase space to zoom in on local dynamics or pan back to catch global structure.</li>
+            </ul>
+
+            <h2>How to Use the Explorer</h2>
+            <p>
+                Click anywhere in the phase portrait to launch a trajectory from that initial condition. The simulator integrates forward in time while simultaneously drawing the vector field (when enabled) so you can interpret the flow.
+                Toggle the vector field to reveal the instantaneous direction of motion, and experiment with adding multiple trajectories to compare their long-term fates under the same parameters.
+            </p>
+
+            <h2>Things to Try</h2>
+            <ul>
+                <li>Start with light damping and increase the forcing amplitude to watch the system transition from a periodic orbit to a chaotic attractor.</li>
+                <li>Fix \(F_0\) and vary the driving frequency to see bands of resonance appear and disappear.</li>
+                <li>Contrast runs launched from the left and right wells; small parameter tweaks often decide which basin of attraction wins.</li>
+            </ul>
+        </article>
+    </main>
+    <footer>
+        <p>&copy; 2025 Interactive Educational Visualizations. | <a href="../../index.html">Back to Gallery</a></p>
+    </footer>
+</body>
+</html>

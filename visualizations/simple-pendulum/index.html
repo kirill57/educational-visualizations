@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple Pendulum</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; margin: 0; background-color: #f0f2f5; color: #1c1e21; }
+        header { background-color: #343a40; color: white; padding: 2rem; text-align: center; }
+        header h1 { margin: 0; font-size: 2.6rem; }
+        main { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+        article { background-color: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { border-bottom: 2px solid #007bff; padding-bottom: 0.5rem; margin-top: 2rem; color: #007bff; }
+        p, li { line-height: 1.7; color: #495057; }
+        .iframe-container { position: relative; overflow: hidden; width: 100%; padding-top: 60%; margin: 2rem 0; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .iframe-container iframe { position: absolute; top: 0; left: 0; bottom: 0; right: 0; width: 100%; height: 100%; border: none; }
+        footer { text-align: center; padding: 2rem; background-color: #343a40; color: white; margin-top: 2rem; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Simple Pendulum</h1>
+        <p>Explore the nonlinear swing of a weight on a string with no damping and no forcing.</p>
+    </header>
+    <main>
+        <article>
+            <h2>Why the Simple Pendulum Still Matters</h2>
+            <p>
+                Long before the language of dynamical systems, the simple pendulum offered scientists a laboratory for periodic motion. Setting aside friction and external driving isolates the pure action of gravity: the restoring torque is proportional to \(\sin\theta\), so the pendulum is linear only for small angles. This visualization keeps the full nonlinearity while letting you scrub through initial angles, launch speeds, and the gravity-to-length ratio.
+            </p>
+
+            <div class="iframe-container">
+                <iframe src="embed.html" title="Interactive Simple Pendulum"></iframe>
+            </div>
+
+            <h2>The Equation of Motion</h2>
+            <p>
+                With unit mass and length scaled to one, the simple pendulum satisfies the nonlinear equation
+            </p>
+            $$ \frac{d^2\theta}{dt^2} + \frac{g}{L} \sin\theta = 0. $$
+            <p>
+                We control the dimensionless parameter \(g/L\) directly in the simulation. The conserved energy is
+            </p>
+            $$ E = \tfrac{1}{2}\,\omega^2 + \frac{g}{L}(1 - \cos\theta), $$
+            <p>
+                which determines whether the pendulum oscillates (\(E < 2g/L\)) or has enough energy to spin over the top.
+            </p>
+
+            <h2>Try These Experiments</h2>
+            <ul>
+                <li>Set a modest initial angle to see nearly sinusoidal motion; then increase the angle past \(60^\circ\) and observe how the phase portrait departs from an ellipse.</li>
+                <li>Launch the bob with zero angle but a large angular velocity to give the system enough energy for continuous rotations. Watch the phase portrait unwrap into horizontal bands.</li>
+                <li>Decrease \(g/L\) to lengthen the effective period, or increase it to make the pendulum snap back faster.</li>
+                <li>Drag the bob in the left pane to set initial conditions geometrically while the phase portrait updates in real time.</li>
+            </ul>
+
+            <p>
+                Even this idealized system captures a key lesson: nonlinearity bends phase portraits away from simple ellipses, yet energy conservation still constrains motion to a one-dimensional curve in the \((\theta, \omega)\) plane.
+            </p>
+        </article>
+    </main>
+    <footer>
+        <p>&copy; 2025 Interactive Educational Visualizations. | <a href="../../index.html">Back to Gallery</a></p>
+    </footer>
+</body>
+</html>

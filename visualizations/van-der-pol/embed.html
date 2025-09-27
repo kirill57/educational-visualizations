@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -19,14 +19,29 @@
     .range::-moz-range-thumb { width: 14px; height: 14px; background: #60a5fa; border-radius: 50%; box-shadow: 0 0 4px #60a5fa; }
     #equation { position: absolute; left: .5rem; top: .5rem; background: transparent; padding: .4rem .6rem; border-radius: .5rem; font-size: .9rem; line-height: 1.2; pointer-events: none; color: #f3f4f6; }
   </style>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]],
+                displayMath: [["$$","$$"], ["\\[","\\]"]]
+            },
+            options: {
+                skipHtmlTags: ["script","noscript","style","textarea","pre","code"]
+            }
+        };
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
   <div id="wrap">
     <canvas id="phaseCanvas"></canvas>
     <div id="equation">
       <div style="font-weight:700;margin-bottom:.25rem">Van der Pol Oscillator</div>
-      <div style="white-space:pre; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;">x' = y
-y' = μ(1-x²)y - x</div>
+      <div style="white-space:pre; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;">
+        \( \dot{x} = y \)
+        \( \dot{y} = \mu (1 - x^2) y - x \)
+      </div>
     </div>
     <div class="controls">
       <button id="startStopBtn" class="btn">Start</button>
@@ -82,4 +97,3 @@ y' = μ(1-x²)y - x</div>
   </script>
 </body>
 </html>
-

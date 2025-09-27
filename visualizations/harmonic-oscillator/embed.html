@@ -1,0 +1,671 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Harmonic Oscillator Studio</title>
+    <style>
+        :root {
+            --panel-bg: rgba(15, 23, 42, 0.4); /* More transparent background for controls */
+            --border-color: rgba(148, 163, 184, 0.18);
+        }
+
+        body {
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+            margin: 0;
+            background: radial-gradient(circle at top, #1e293b 0%, #0b1120 65%, #030712 100%);
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .header {
+            text-align: center;
+            padding: 0.8rem 1rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin: 0.3rem 0;
+            text-shadow: 0 8px 22px rgba(59, 130, 246, 0.25);
+        }
+
+        .header p {
+            color: rgba(226, 232, 240, 0.7);
+            margin: 0 auto;
+            max-width: 800px;
+            font-size: 0.95rem;
+        }
+
+        #main-container {
+            flex-grow: 1;
+            display: flex;
+            gap: 0.75rem;
+            padding: 0 0.75rem 0.75rem;
+            min-height: 0; /* Important for flexbox children with overflow */
+        }
+
+        .canvas-wrap {
+            position: relative;
+            flex: 1;
+            min-width: 0;
+            box-shadow: 0 0 28px rgba(56, 189, 248, 0.25);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            backdrop-filter: blur(6px);
+            overflow: hidden; /* Ensures canvas corners are rounded */
+        }
+        
+        canvas {
+            background: rgba(15, 23, 42, 0.92);
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #pendulumCanvas {
+             cursor: grab;
+        }
+        #pendulumCanvas:active {
+             cursor: grabbing;
+        }
+
+
+        .controls {
+            position: absolute;
+            left: 0.75rem; /* Position on the left */
+            bottom: 0.75rem; /* Position on the bottom */
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.55rem;
+            align-items: center;
+            background: var(--panel-bg);
+            padding: 0.4rem 0.65rem;
+            border-radius: 0.65rem;
+            pointer-events: none;
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.4);
+        }
+
+        .controls > * {
+            pointer-events: auto;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #f8fafc;
+            padding: 0.3rem 0.75rem;
+            border: 0;
+            border-radius: 0.45rem;
+            font-weight: 600;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            box-shadow: 0 8px 14px rgba(37, 99, 235, 0.25);
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 18px rgba(37, 99, 235, 0.35);
+        }
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .param-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.2rem;
+            min-width: 130px;
+        }
+        .param-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(226, 232, 240, 0.85);
+        }
+        .range {
+            width: 140px;
+            height: 6px;
+            background: rgba(148, 163, 184, 0.25);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        .range::-webkit-slider-thumb {
+            width: 16px;
+            height: 16px;
+            background: #38bdf8;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+            border: none;
+            -webkit-appearance: none;
+        }
+        .range::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: #38bdf8;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+            border: none;
+        }
+
+        select {
+            background-color: rgba(30, 41, 59, 0.95);
+            color: #f8fafc;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            border-radius: 0.45rem;
+            font-size: 0.78rem;
+            padding: 0.25rem 0.5rem;
+        }
+        select:focus {
+            outline: none;
+            border-color: rgba(96, 165, 250, 0.8);
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.25);
+        }
+        
+        #equation {
+            position: absolute;
+            left: 0.75rem;
+            top: 0.6rem;
+            background: rgba(15, 23, 42, 0.72);
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.6rem;
+            font-size: 0.86rem;
+            line-height: 1.35;
+            pointer-events: none;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.18);
+        }
+        #equation .title-caption {
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+            letter-spacing: 0.05em;
+            color: rgba(191, 219, 254, 0.95);
+        }
+        #equation .code {
+            white-space: pre;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+            color: rgba(248, 250, 252, 0.85);
+        }
+        
+        @media (max-width: 1200px) {
+            .param-group { min-width: 110px; }
+            .range { width: 120px; }
+        }
+        @media (max-width: 768px) {
+            #main-container { flex-direction: column; }
+            .header h1 { font-size: 1.5rem; }
+            .header p { font-size: 0.85rem; }
+        }
+    </style>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]],
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]]
+            },
+            options: {
+                skipHtmlTags: ["script", "noscript", "style", "textarea", "pre", "code"]
+            }
+        };
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <div class="header">
+        <h1>Harmonic Oscillator Studio</h1>
+        <p>Drag the mass to set the initial displacement. Adjust damping and forcing to see how the oscillator responds.</p>
+    </div>
+
+    <div id="main-container">
+        <!-- Pendulum Simulation Panel -->
+        <div class="canvas-wrap">
+            <canvas id="pendulumCanvas"></canvas>
+             <div id="equation">
+                <div class="title-caption">Damped, driven harmonic oscillator</div>
+                <div class="code">
+                    \( \ddot{x} + 2\zeta\,\omega_0\,\dot{x} + \omega_0^2 x = F \cos(\Omega t) \)
+                </div>
+            </div>
+            <div class="controls">
+                <button id="startStopBtn" class="btn">Start</button>
+                <button id="resetBtn" class="btn">Reset</button>
+                <div class="param-group">
+                    <label class="param-label">Initial x (m): <span id="x0Value">0.80</span></label>
+                    <input id="x0Slider" class="range" type="range" min="-1.5" max="1.5" step="0.01" value="0.8" />
+                </div>
+                <div class="param-group">
+                    <label class="param-label">Damping &#950;: <span id="dampingValue">0.05</span></label>
+                    <input id="dampingSlider" class="range" type="range" min="0" max="0.5" step="0.01" value="0.05" />
+                </div>
+                <div class="param-group">
+                    <label class="param-label">Natural &#969;&#8320;: <span id="omegaValue">1.20</span></label>
+                    <input id="omegaSlider" class="range" type="range" min="0.5" max="3" step="0.01" value="1.2" />
+                </div>
+                <div class="param-group">
+                    <label class="param-label">Forcing</label>
+                    <select id="forcingSelect">
+                        <option value="none" selected>None</option>
+                        <option value="cosine">Cosine Drive</option>
+                    </select>
+                </div>
+                <div class="param-group">
+                    <label class="param-label">Amplitude F: <span id="forceValue">0.00</span></label>
+                    <input id="forceSlider" class="range" type="range" min="0" max="2.5" step="0.01" value="0" disabled />
+                </div>
+                <div class="param-group">
+                    <label class="param-label">Drive &#937;: <span id="driveValue">1.00</span></label>
+                    <input id="driveSlider" class="range" type="range" min="0.5" max="3.5" step="0.01" value="1" disabled />
+                </div>
+            </div>
+        </div>
+        
+        <!-- Phase Portrait Panel -->
+        <div class="canvas-wrap">
+            <canvas id="phaseCanvas"></canvas>
+        </div>
+    </div>
+
+    <script>
+    const $ = id => document.getElementById(id);
+
+    // Canvas setup
+    const pendulumCanvas = $('pendulumCanvas');
+    const pendulumCtx = pendulumCanvas.getContext('2d');
+    const phaseCanvas = $('phaseCanvas');
+    const phaseCtx = phaseCanvas.getContext('2d');
+
+    // Controls
+    const startStopBtn = $('startStopBtn');
+    const resetBtn = $('resetBtn');
+    const x0Slider = $('x0Slider');
+    const dampingSlider = $('dampingSlider');
+    const omegaSlider = $('omegaSlider');
+    const forceSlider = $('forceSlider');
+    const driveSlider = $('driveSlider');
+    const forcingSelect = $('forcingSelect');
+
+    const x0Value = $('x0Value');
+    const dampingValue = $('dampingValue');
+    const omegaValue = $('omegaValue');
+    const forceValue = $('forceValue');
+    const driveValue = $('driveValue');
+
+    // Simulation state and parameters
+    const state = { x: parseFloat(x0Slider.value), v: 0, t: 0 };
+    const params = {
+        zeta: parseFloat(dampingSlider.value),
+        omega0: parseFloat(omegaSlider.value),
+        forceAmp: parseFloat(forceSlider.value),
+        driveFreq: parseFloat(driveSlider.value)
+    };
+    
+    // History for plotting
+    const history = [];
+    let lastSample = 0;
+    const historyWindow = 20; // seconds
+    const sampleEvery = 0.02; // seconds
+    const maxDisp = 1.5;
+
+    // App state
+    let running = false;
+    let lastFrameTime = null;
+    let accumulator = 0;
+    let forcingMode = forcingSelect.value;
+    let isDragging = false;
+    let dragOffset = 0;
+    let lastLayout = null;
+
+    // --- Core Simulation Logic ---
+    function systemAcceleration(x, v, t) {
+        let force = 0;
+        if (forcingMode === 'cosine') {
+            force = params.forceAmp * Math.cos(params.driveFreq * t);
+        }
+        return -2 * params.zeta * params.omega0 * v - (params.omega0 ** 2) * x + force;
+    }
+
+    function rk4Step(dt) {
+        const { x, v, t } = state;
+        const k1v = systemAcceleration(x, v, t);
+        const k2v = systemAcceleration(x + 0.5 * dt * v, v + 0.5 * dt * k1v, t + 0.5 * dt);
+        const k3v = systemAcceleration(x + 0.5 * dt * (v + 0.5 * dt * k1v), v + 0.5 * dt * k2v, t + 0.5 * dt);
+        const k4v = systemAcceleration(x + dt * (v + 0.5 * dt * k2v), v + dt * k3v, t + dt);
+        state.x += dt * (v + dt / 6 * (k1v + k2v + k3v));
+        state.v += dt / 6 * (k1v + 2 * k2v + 2 * k3v + k4v);
+        state.t += dt;
+    }
+    
+    function advanceSim(frameDt) {
+        const dt = Math.min(frameDt, 0.05);
+        accumulator += dt;
+        const stepSize = 0.004;
+        while (accumulator >= stepSize) {
+            rk4Step(stepSize);
+            accumulator -= stepSize;
+            recordHistory();
+        }
+    }
+
+    function recordHistory() {
+        if (state.t - lastSample < sampleEvery) return;
+        lastSample = state.t;
+        history.push({ t: state.t, x: state.x, v: state.v });
+        while (history.length && state.t - history[0].t > historyWindow) {
+            history.shift();
+        }
+    }
+
+    // --- Drawing Functions ---
+
+    function drawGrid(ctx, w, h) {
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.07)';
+        ctx.lineWidth = 1;
+        const gridSize = 40;
+        for (let x = 0; x < w; x += gridSize) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, h);
+            ctx.stroke();
+        }
+        for (let y = 0; y < h; y += gridSize) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(w, y);
+            ctx.stroke();
+        }
+    }
+
+    function drawSpringSystem(ctx, w, h, displayRange) {
+        const wallX = 40;
+        const massWidth = 90;
+        const massHeight = 78;
+        const centerY = h * 0.45;
+        const rightLimit = w - 60;
+        const centerX = (wallX + rightLimit) / 2;
+        const pxPerUnit = (rightLimit - wallX - massWidth) / (2 * displayRange);
+
+        // Position is now calculated based on the true state.x and dynamic scale
+        const xPx = centerX + state.x * pxPerUnit;
+        const massLeft = xPx - massWidth / 2;
+        const massTop = centerY - massHeight / 2;
+        
+        // Wall
+        ctx.fillStyle = 'rgba(30, 41, 59, 0.9)';
+        ctx.fillRect(0, centerY - massHeight, wallX, massHeight * 2);
+        
+        // Spring
+        const springStart = wallX;
+        const springEnd = massLeft;
+        const springLength = springEnd - springStart;
+        const coils = 12;
+        const amplitude = 15;
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = 'rgba(96, 165, 250, 0.9)';
+        ctx.beginPath();
+        ctx.moveTo(springStart, centerY);
+        for (let i = 0; i < coils; i++) {
+            const x1 = springStart + (i + 0.5) * (springLength / coils);
+            const y1 = centerY + (i % 2 === 0 ? amplitude : -amplitude);
+            ctx.lineTo(x1, y1);
+        }
+        ctx.lineTo(springEnd, centerY);
+        ctx.stroke();
+        
+        // Mass
+        const massGradient = ctx.createLinearGradient(massLeft, massTop, massLeft + massWidth, massTop + massHeight);
+        massGradient.addColorStop(0, '#60a5fa');
+        massGradient.addColorStop(1, '#3b82f6');
+        ctx.fillStyle = massGradient;
+        ctx.strokeStyle = 'rgba(15, 23, 42, 0.5)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(massLeft, massTop, massWidth, massHeight, 14);
+        ctx.fill();
+        ctx.stroke();
+        
+        return { massLeft, massTop, massWidth, massHeight, xPx, centerX, pxPerUnit, wallX, rightLimit };
+    }
+
+    function drawStats(ctx, w, h) {
+        ctx.fillStyle = 'rgba(191, 219, 254, 0.85)';
+        ctx.font = '13px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace';
+        const energy = 0.5 * (params.omega0**2 * state.x**2 + state.v**2);
+        const lines = [
+            `t = ${state.t.toFixed(2)}s`,
+            `x = ${state.x.toFixed(2)}m`,
+            `v = ${state.v.toFixed(2)}m/s`,
+            `E = ${energy.toFixed(2)}J`
+        ];
+        lines.forEach((line, i) => {
+            ctx.fillText(line, w - 150, 30 + i * 16);
+        });
+    }
+
+    function drawPhasePortrait(ctx, w, h) {
+        const pad = 40;
+        const plotX = pad, plotY = pad;
+        const plotW = w - 2 * pad, plotH = h - 2 * pad;
+        const centerX = plotX + plotW / 2;
+        const centerY = plotY + plotH / 2;
+
+        // Axes
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(plotX, centerY);
+        ctx.lineTo(plotX + plotW, centerY); // x-axis
+        ctx.moveTo(centerX, plotY);
+        ctx.lineTo(centerX, plotY + plotH); // v-axis
+        ctx.stroke();
+
+        ctx.fillStyle = 'rgba(226, 232, 240, 0.8)';
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Position (x)', centerX, plotY + plotH + 15);
+        ctx.save();
+        ctx.translate(plotX - 15, centerY);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText('Velocity (v)', 0, 0);
+        ctx.restore();
+
+        if (history.length < 2) return;
+
+        // Find scale, adding a 10% buffer
+        const maxAbsX = history.reduce((max, p) => Math.max(max, Math.abs(p.x)), maxDisp) * 1.1;
+        const maxAbsV = history.reduce((max, p) => Math.max(max, Math.abs(p.v)), 1) * 1.1;
+        const xScale = plotW / (2 * maxAbsX);
+        const yScale = plotH / (2 * maxAbsV);
+
+        // Draw trajectory
+        ctx.beginPath();
+        for (let i = 0; i < history.length; i++) {
+            const p = history[i];
+            const px = centerX + p.x * xScale;
+            const py = centerY - p.v * yScale;
+            const alpha = i / history.length;
+            ctx.strokeStyle = `rgba(56, 189, 248, ${alpha * 0.9})`;
+            ctx.lineWidth = 2.5;
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+
+        // Draw current point
+        const currentPx = centerX + state.x * xScale;
+        const currentPy = centerY - state.v * yScale;
+        ctx.fillStyle = '#f8fafc';
+        ctx.beginPath();
+        ctx.arc(currentPx, currentPy, 5, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+    
+    function drawScene() {
+        // Clear and prepare canvases
+        [pendulumCtx, phaseCtx].forEach(ctx => {
+            const w = ctx.canvas.width / (window.devicePixelRatio || 1);
+            const h = ctx.canvas.height / (window.devicePixelRatio || 1);
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            drawGrid(ctx, w, h);
+        });
+
+        const w = pendulumCanvas.clientWidth;
+        const h = pendulumCanvas.clientHeight;
+        
+        // Determine the dynamic display range for the pendulum visualization, ensuring it's at least the default
+        const currentMaxAbsX = history.reduce((max, p) => Math.max(max, Math.abs(p.x)), maxDisp);
+
+        // Draw on pendulum canvas using the new dynamic range
+        lastLayout = drawSpringSystem(pendulumCtx, w, h, currentMaxAbsX);
+        drawStats(pendulumCtx, w, h);
+
+        // Draw on phase canvas
+        drawPhasePortrait(phaseCtx, phaseCanvas.clientWidth, phaseCanvas.clientHeight);
+    }
+    
+    // --- Event Handling & Setup ---
+    
+    function resizeCanvases() {
+        const dpr = window.devicePixelRatio || 1;
+        [pendulumCanvas, phaseCanvas].forEach(canvas => {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = Math.round(rect.width * dpr);
+            canvas.height = Math.round(rect.height * dpr);
+            const ctx = canvas.getContext('2d');
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        });
+        drawScene();
+    }
+
+    function resetState(keepX = false) {
+        accumulator = 0;
+        state.t = 0;
+        state.v = 0;
+        if (!keepX) {
+            state.x = parseFloat(x0Slider.value);
+        }
+        history.length = 0;
+        lastSample = 0;
+    }
+    
+    function setupEventListeners() {
+        startStopBtn.addEventListener('click', () => {
+            running = !running;
+            startStopBtn.textContent = running ? 'Pause' : 'Start';
+            if (running) lastFrameTime = null;
+        });
+
+        resetBtn.addEventListener('click', () => {
+            running = false;
+            startStopBtn.textContent = 'Start';
+            resetState(false);
+        });
+
+        x0Slider.addEventListener('input', () => {
+            const val = parseFloat(x0Slider.value);
+            x0Value.textContent = val.toFixed(2);
+            if (!running && !isDragging) {
+                resetState(true);
+                state.x = val;
+            }
+        });
+
+        dampingSlider.addEventListener('input', () => {
+            params.zeta = parseFloat(dampingSlider.value);
+            dampingValue.textContent = params.zeta.toFixed(2);
+        });
+
+        omegaSlider.addEventListener('input', () => {
+            params.omega0 = parseFloat(omegaSlider.value);
+            omegaValue.textContent = params.omega0.toFixed(2);
+        });
+
+        forceSlider.addEventListener('input', () => {
+            params.forceAmp = parseFloat(forceSlider.value);
+            forceValue.textContent = params.forceAmp.toFixed(2);
+        });
+
+        driveSlider.addEventListener('input', () => {
+            params.driveFreq = parseFloat(driveSlider.value);
+            driveValue.textContent = params.driveFreq.toFixed(2);
+        });
+        
+        forcingSelect.addEventListener('change', () => {
+            forcingMode = forcingSelect.value;
+            const enabled = forcingMode === 'cosine';
+            forceSlider.disabled = !enabled;
+            driveSlider.disabled = !enabled;
+            if (!enabled) {
+                params.forceAmp = 0;
+                forceSlider.value = '0';
+                forceValue.textContent = '0.00';
+            }
+        });
+        
+        // Pointer events for dragging the mass
+        const getPointerPosition = (evt) => {
+            const rect = pendulumCanvas.getBoundingClientRect();
+            return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
+        };
+
+        pendulumCanvas.addEventListener('pointerdown', evt => {
+            const pos = getPointerPosition(evt);
+            if (
+                pos.x >= lastLayout.massLeft - 20 && pos.x <= lastLayout.massLeft + lastLayout.massWidth + 20 &&
+                pos.y >= lastLayout.massTop - 20 && pos.y <= lastLayout.massTop + lastLayout.massHeight + 20
+            ) {
+                isDragging = true;
+                running = false;
+                startStopBtn.textContent = 'Start';
+                dragOffset = pos.x - lastLayout.xPx;
+                pendulumCanvas.setPointerCapture(evt.pointerId);
+            }
+        });
+
+        pendulumCanvas.addEventListener('pointermove', evt => {
+            if (!isDragging) return;
+            const pos = getPointerPosition(evt);
+            const limited = Math.max(lastLayout.wallX + 40, Math.min(pos.x - dragOffset, lastLayout.rightLimit - 40));
+            state.x = (limited - lastLayout.centerX) / lastLayout.pxPerUnit;
+            resetState(true); // Keep new X, reset everything else
+            x0Slider.value = state.x.toFixed(2);
+            x0Value.textContent = parseFloat(x0Slider.value).toFixed(2);
+        });
+
+        pendulumCanvas.addEventListener('pointerup', evt => {
+            if (!isDragging) return;
+            isDragging = false;
+            pendulumCanvas.releasePointerCapture(evt.pointerId);
+        });
+        
+        window.addEventListener('resize', resizeCanvases);
+    }
+    
+    function frame(timestamp) {
+        if (!lastFrameTime) lastFrameTime = timestamp;
+        const dt = (timestamp - lastFrameTime) / 1000;
+        lastFrameTime = timestamp;
+        if (running && !isDragging) {
+            advanceSim(dt);
+        }
+        drawScene();
+        requestAnimationFrame(frame);
+    }
+
+    // --- Initialisation ---
+    setupEventListeners();
+    resizeCanvases();
+    requestAnimationFrame(frame);
+</script>
+</body>
+</html>

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forced Duffing Oscillator Explorer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overscroll-behavior: none;
+        }
+        .slider-thumb::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #4f46e5;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        .slider-thumb::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: #4f46e5;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200 flex flex-col items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-7xl mx-auto bg-gray-800 rounded-2xl shadow-2xl p-4 sm:p-6 lg:p-8">
+        <div class="text-center mb-6">
+            <h1 class="text-3xl sm:text-4xl font-bold text-white">Forced Duffing Oscillator</h1>
+            <p class="text-gray-400 mt-2">An interactive phase portrait explorer.</p>
+            <p class="text-indigo-400 text-sm mt-2">Click on the canvas to start a new trajectory from that point.</p>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- Controls Column -->
+            <div class="lg:w-1/3 bg-gray-900/50 p-6 rounded-xl border border-gray-700">
+                <h2 class="text-xl font-semibold mb-6 text-white border-b border-gray-700 pb-2">Parameters</h2>
+                
+                <!-- Equation Display -->
+                <div class="bg-gray-800 p-3 rounded-lg text-center mb-6">
+                    <p class="text-sm text-gray-300 font-mono">
+                        ẍ + δẋ + βx + αx³ = F₀cos(ωt)
+                    </p>
+                </div>
+
+                <div class="space-y-5">
+                    <!-- Delta Slider -->
+                    <div>
+                        <label for="delta" class="flex justify-between items-center text-sm font-medium text-gray-300">
+                            <span>Damping (δ)</span>
+                            <span id="delta-value" class="text-indigo-400 font-semibold">0.25</span>
+                        </label>
+                        <input id="delta" type="range" min="0" max="1" step="0.01" value="0.25" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider-thumb mt-1">
+                    </div>
+                    <!-- Beta Slider -->
+                    <div>
+                        <label for="beta" class="flex justify-between items-center text-sm font-medium text-gray-300">
+                            <span>Linear Stiffness (β)</span>
+                            <span id="beta-value" class="text-indigo-400 font-semibold">-1.00</span>
+                        </label>
+                        <input id="beta" type="range" min="-2" max="2" step="0.01" value="-1" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider-thumb mt-1">
+                    </div>
+                    <!-- Alpha Slider -->
+                    <div>
+                        <label for="alpha" class="flex justify-between items-center text-sm font-medium text-gray-300">
+                            <span>Nonlinearity (α)</span>
+                            <span id="alpha-value" class="text-indigo-400 font-semibold">1.00</span>
+                        </label>
+                        <input id="alpha" type="range" min="0" max="10" step="0.01" value="1" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider-thumb mt-1">
+                    </div>
+                    <!-- F0 Slider -->
+                    <div>
+                        <label for="f0" class="flex justify-between items-center text-sm font-medium text-gray-300">
+                            <span>Forcing Amplitude (F₀)</span>
+                            <span id="f0-value" class="text-indigo-400 font-semibold">0.30</span>
+                        </label>
+                        <input id="f0" type="range" min="0" max="2" step="0.01" value="0.3" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider-thumb mt-1">
+                    </div>
+                    <!-- Omega Slider -->
+                    <div>
+                        <label for="omega" class="flex justify-between items-center text-sm font-medium text-gray-300">
+                            <span>Forcing Frequency (ω)</span>
+                            <span id="omega-value" class="text-indigo-400 font-semibold">1.00</span>
+                        </label>
+                        <input id="omega" type="range" min="0" max="2" step="0.01" value="1" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider-thumb mt-1">
+                    </div>
+                </div>
+
+                <div class="mt-8 pt-6 border-t border-gray-700">
+                    <h3 class="text-lg font-semibold mb-4 text-white">View Controls</h3>
+                    <div class="space-y-5">
+                        <!-- View Range Slider -->
+                        <div>
+                            <label for="view-range" class="flex justify-between items-center text-sm font-medium text-gray-300">
+                                <span>View Range</span>
+                                <span id="view-range-value" class="text-indigo-400 font-semibold">4.50</span>
+                            </label>
+                            <input id="view-range" type="range" min="1" max="10" step="0.1" value="4.5" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider-thumb mt-1">
+                        </div>
+                        <!-- Slope Field Toggle -->
+                        <div class="flex items-center gap-2 pt-2">
+                            <input type="checkbox" id="show-field-toggle" class="h-4 w-4 rounded border-gray-600 bg-gray-700 text-indigo-600 focus:ring-indigo-500" checked>
+                            <label for="show-field-toggle" class="text-sm font-medium text-gray-300">Show Slope Field</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 pt-6 border-t border-gray-700 flex flex-col sm:flex-row gap-3">
+                    <button id="start-stop-btn" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg transition-colors">Start</button>
+                    <button id="reset-btn" class="flex-1 bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition-colors">Reset</button>
+                </div>
+
+            </div>
+
+            <!-- Canvas Column -->
+            <div class="lg:w-2/3 flex-grow flex items-center justify-center">
+                <canvas id="phase-portrait" class="w-full h-full bg-black rounded-xl aspect-square border-2 border-gray-700 cursor-crosshair"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elements ---
+            const canvas = document.getElementById('phase-portrait');
+            const ctx = canvas.getContext('2d');
+
+            const sliders = {
+                delta: document.getElementById('delta'),
+                beta: document.getElementById('beta'),
+                alpha: document.getElementById('alpha'),
+                f0: document.getElementById('f0'),
+                omega: document.getElementById('omega'),
+                viewRange: document.getElementById('view-range'),
+            };
+
+            const values = {
+                delta: document.getElementById('delta-value'),
+                beta: document.getElementById('beta-value'),
+                alpha: document.getElementById('alpha-value'),
+                f0: document.getElementById('f0-value'),
+                omega: document.getElementById('omega-value'),
+                viewRange: document.getElementById('view-range-value'),
+            };
+
+            const startStopBtn = document.getElementById('start-stop-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const showFieldToggle = document.getElementById('show-field-toggle');
+
+            // --- Simulation Parameters ---
+            let params = {
+                delta: 0.25,
+                beta: -1.0,
+                alpha: 1.0,
+                F0: 0.3,
+                omega: 1.0,
+            };
+
+            let viewRange = 4.5;
+            let trajectories = [];
+            let isRunning = false;
+            let animationId = null;
+
+            const dt = 0.01; // Time step for numerical integration
+            const stepsPerFrame = 5; // Integration steps per animation frame
+            const TRAJECTORY_COLORS = ['#34d399', '#fbbf24', '#f87171', '#60a5fa', '#c084fc', '#f472b6'];
+            let colorIndex = 0;
+
+            // --- Canvas and Drawing Setup ---
+            let scale;
+            
+            function resizeCanvas() {
+                const size = canvas.parentElement.clientWidth;
+                canvas.width = size;
+                canvas.height = size;
+                scale = canvas.width / viewRange; 
+                drawAxes();
+            }
+
+            function mapCoords(x, y) {
+                const px = canvas.width / 2 + x * scale;
+                const py = canvas.height / 2 - y * scale;
+                return { px, py };
+            }
+
+            function unmapCoords(px, py) {
+                const x = (px - canvas.width / 2) / scale;
+                const y = -(py - canvas.height / 2) / scale;
+                return { x, y };
+            }
+            
+            function drawAxes() {
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.lineWidth = 1;
+
+                // X-axis
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height / 2);
+                ctx.lineTo(canvas.width, canvas.height / 2);
+                ctx.stroke();
+
+                // Y-axis
+                ctx.beginPath();
+                ctx.moveTo(canvas.width / 2, 0);
+                ctx.lineTo(canvas.width / 2, canvas.height);
+                ctx.stroke();
+            }
+
+            function drawVectorField(t) {
+                const gridSize = 35; // Spacing of the vectors in pixels
+                const lineLength = 12; // Length of the vectors in pixels
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)'; // Less transparent
+                ctx.lineWidth = 0.3; // Thinner lines
+
+                for (let px = 0; px < canvas.width; px += gridSize) {
+                    for (let py = 0; py < canvas.height; py += gridSize) {
+                        const { x, y } = unmapCoords(px, py);
+                        const { x_dot, y_dot } = duffingDerivs(x, y, t, params);
+
+                        const vec_px = x_dot * scale;
+                        const vec_py = -y_dot * scale;
+                        const magnitude = Math.sqrt(vec_px * vec_px + vec_py * vec_py);
+
+                        if (magnitude === 0) continue;
+
+                        const dx = (vec_px / magnitude) * lineLength;
+                        const dy = (vec_py / magnitude) * lineLength;
+
+                        ctx.beginPath();
+                        ctx.moveTo(px - dx / 2, py - dy / 2);
+                        ctx.lineTo(px + dx / 2, py + dy / 2);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+
+            // --- Duffing Equation & RK4 Integrator ---
+            
+            // Defines the system of first-order ODEs
+            // dx/dt = y
+            // dy/dt = F0*cos(omega*t) - delta*y - beta*x - alpha*x^3
+            function duffingDerivs(x, y, t, p) {
+                const x_dot = y;
+                const y_dot = p.F0 * Math.cos(p.omega * t) - p.delta * y - p.beta * x - p.alpha * x * x * x;
+                return { x_dot, y_dot };
+            }
+
+            // 4th Order Runge-Kutta step
+            function rk4Step(traj, p, h) {
+                const { x, y, t } = traj;
+
+                const k1 = duffingDerivs(x, y, t, p);
+                const k2 = duffingDerivs(x + 0.5 * h * k1.x_dot, y + 0.5 * h * k1.y_dot, t + 0.5 * h, p);
+                const k3 = duffingDerivs(x + 0.5 * h * k2.x_dot, y + 0.5 * h * k2.y_dot, t + 0.5 * h, p);
+                const k4 = duffingDerivs(x + h * k3.x_dot, y + h * k3.y_dot, t + h, p);
+
+                traj.x += (h / 6) * (k1.x_dot + 2 * k2.x_dot + 2 * k3.x_dot + k4.x_dot);
+                traj.y += (h / 6) * (k1.y_dot + 2 * k2.y_dot + 2 * k3.y_dot + k4.y_dot);
+                traj.t += h;
+            }
+
+            // --- Animation Loop ---
+            function animate() {
+                if (!isRunning) return;
+
+                // Fading effect by drawing a semi-transparent background
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.01)'; // Made the fade twice as slow
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                if (showFieldToggle.checked && trajectories.length > 0) {
+                    drawVectorField(trajectories[0].t);
+                }
+                drawAxes();
+
+                // Add glow effect for the trace
+                ctx.shadowColor = '#FFFFFF';
+                ctx.shadowBlur = 8;
+
+                for (let i = 0; i < stepsPerFrame; i++) {
+                    trajectories.forEach(traj => {
+                        const { px: old_px, py: old_py } = mapCoords(traj.x, traj.y);
+                        
+                        rk4Step(traj, params, dt);
+                        
+                        const { px: new_px, py: new_py } = mapCoords(traj.x, traj.y);
+                        
+                        // Draw trajectory segment
+                        ctx.beginPath();
+                        ctx.moveTo(old_px, old_py);
+                        ctx.lineTo(new_px, new_py);
+                        ctx.strokeStyle = '#FFFFFF'; // Changed to white for better visibility
+                        ctx.lineWidth = 2; // Made it even thicker
+                        ctx.stroke();
+                    });
+                }
+                
+                // Reset glow effect so it doesn't affect the point markers
+                ctx.shadowBlur = 0;
+                
+                // Draw the current point marker for each trajectory
+                trajectories.forEach(traj => {
+                    const { px, py } = mapCoords(traj.x, traj.y);
+                    ctx.beginPath();
+                    ctx.arc(px, py, 3, 0, 2 * Math.PI); // 3px radius circle
+                    ctx.fillStyle = traj.color;
+                    ctx.fill();
+                });
+
+                animationId = requestAnimationFrame(animate);
+            }
+
+            // --- Control Functions ---
+            function startSimulation() {
+                if (isRunning) return;
+                isRunning = true;
+                startStopBtn.textContent = 'Stop';
+                startStopBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-500');
+                startStopBtn.classList.add('bg-red-600', 'hover:bg-red-500');
+                animate();
+            }
+
+            function stopSimulation() {
+                if (!isRunning) return;
+                isRunning = false;
+                cancelAnimationFrame(animationId);
+                animationId = null;
+                startStopBtn.textContent = 'Start';
+                startStopBtn.classList.remove('bg-red-600', 'hover:bg-red-500');
+                startStopBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-500');
+            }
+
+            function resetSimulation() {
+                stopSimulation();
+                trajectories = [];
+                addTrajectory(0.1, 0, getNextColor());
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = 'black';
+                ctx.fillRect(0,0,canvas.width, canvas.height);
+                if (showFieldToggle.checked) {
+                    drawVectorField(0);
+                }
+                drawAxes();
+            }
+
+            function addTrajectory(x, y, color) {
+                trajectories.push({ x: x, y: y, t: 0, color: color });
+            }
+            
+            function getNextColor() {
+                const color = TRAJECTORY_COLORS[colorIndex];
+                colorIndex = (colorIndex + 1) % TRAJECTORY_COLORS.length;
+                return color;
+            }
+
+            // --- Event Listeners ---
+            function setupEventListeners() {
+                window.addEventListener('resize', resizeCanvas);
+
+                // Listener for the physics parameters
+                ['delta', 'beta', 'alpha', 'f0', 'omega'].forEach(key => {
+                    if (sliders[key]) {
+                        sliders[key].addEventListener('input', (e) => {
+                            const value = parseFloat(e.target.value);
+                            if (key === 'f0') {
+                                params['F0'] = value;
+                            } else {
+                                params[key] = value;
+                            }
+                            values[key].textContent = value.toFixed(2);
+                        });
+                    }
+                });
+                
+                // Separate listener for the view/zoom control
+                if (sliders.viewRange) {
+                    sliders.viewRange.addEventListener('input', (e) => {
+                        const value = parseFloat(e.target.value);
+                        viewRange = value;
+                        values.viewRange.textContent = value.toFixed(2);
+                        scale = canvas.width / viewRange;
+                        if (!isRunning) {
+                            ctx.fillStyle = 'black';
+                            ctx.fillRect(0, 0, canvas.width, canvas.height);
+                            if (showFieldToggle.checked) {
+                               drawVectorField(0);
+                            }
+                            drawAxes();
+                        }
+                    });
+                }
+
+                startStopBtn.addEventListener('click', () => {
+                    if (isRunning) {
+                        stopSimulation();
+                    } else {
+                        startSimulation();
+                    }
+                });
+
+                resetBtn.addEventListener('click', resetSimulation);
+                
+                canvas.addEventListener('click', (e) => {
+                    const rect = canvas.getBoundingClientRect();
+                    const px = e.clientX - rect.left;
+                    const py = e.clientY - rect.top;
+                    const { x, y } = unmapCoords(px, py);
+                    addTrajectory(x, y, getNextColor());
+                    if (!isRunning) startSimulation();
+                });
+
+                showFieldToggle.addEventListener('change', () => {
+                    if (!isRunning) {
+                        ctx.fillStyle = 'black';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        if (showFieldToggle.checked) {
+                            drawVectorField(0);
+                        }
+                        drawAxes();
+                    }
+                });
+            }
+
+            // --- Initialization ---
+            function init() {
+                resizeCanvas();
+                setupEventListeners();
+                resetSimulation(); // This sets up the initial state
+                stopSimulation(); // Start in a paused state
+            }
+            
+            init();
+        });
+    </script>
+</body>
+</html>
+

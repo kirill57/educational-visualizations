@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
@@ -24,6 +24,19 @@
         .param-group { display: flex; align-items: center; gap: .4rem; }
         #forceSelect { background-color: #374151; color: #f3f4f6; border: 1px solid #4b5563; border-radius: .375rem; font-size: .8rem; padding: .1rem; }
     </style>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]],
+                displayMath: [["$$","$$"], ["\\[","\\]"]]
+            },
+            options: {
+                skipHtmlTags: ["script","noscript","style","textarea","pre","code"]
+            }
+        };
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
     <div class="title">
@@ -36,7 +49,7 @@
         <div id="equation" style="position:absolute;left:.5rem;top:.5rem;background:transparent;padding:.4rem .6rem;border-radius:.5rem;font-size:.9rem;line-height:1.2;pointer-events:none">
             <div style="font-weight:700;margin-bottom:.25rem">Driven Pendulum</div>
             <div style="white-space:pre; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;">
-θ'' + δθ' + sin(θ) = F(t)
+            \( \ddot{\theta} + \delta\,\dot{\theta} + \sin\theta = F(t) \)
             </div>
         </div>
         <div class="controls">
@@ -54,7 +67,7 @@
                 </select>
             </div>
             <div class="param-group">
-                 <label class="param-label">Damping (δ): <span id="dampingValue">0.50</span></label>
+                 <label class="param-label">Damping (Î´): <span id="dampingValue">0.50</span></label>
                  <input id="dampingSlider" class="range" type="range" min="0" max="1" step="0.01" value="0.5" />
             </div>
              <div class="param-group">
@@ -62,7 +75,7 @@
                  <input id="ampSlider" class="range" type="range" min="0" max="2.5" step="0.01" value="1.5" />
             </div>
              <div class="param-group">
-                 <label class="param-label">Frequency (Ω): <span id="freqValue">0.67</span></label>
+                 <label class="param-label">Frequency (Î©): <span id="freqValue">0.67</span></label>
                  <input id="freqSlider" class="range" type="range" min="0.1" max="2" step="0.01" value="0.666" />
             </div>
         </div>
@@ -164,9 +177,9 @@
         }
        
         ctx.fillStyle = '#9ca3af'; ctx.font = '12px system-ui, sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText('θ', canvas.width / 2, y0 + 15);
+        ctx.fillText('Î¸', canvas.width / 2, y0 + 15);
         ctx.textAlign = 'left';
-        ctx.fillText('ω', mapTo(view.tMin, 0).x + 5, 12);
+        ctx.fillText('Ï‰', mapTo(view.tMin, 0).x + 5, 12);
     }
 
     function drawField() {
@@ -306,3 +319,4 @@
     </script>
 </body>
 </html>
+

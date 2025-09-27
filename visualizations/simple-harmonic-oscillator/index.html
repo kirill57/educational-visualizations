@@ -1,0 +1,70 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple Harmonic Oscillator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; margin: 0; background-color: #f0f2f5; color: #1c1e21; }
+        header { background-color: #343a40; color: white; padding: 2rem; text-align: center; }
+        header h1 { margin: 0; font-size: 2.5rem; }
+        main { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+        article { background-color: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { border-bottom: 2px solid #007bff; padding-bottom: 0.5rem; margin-top: 2rem; color: #007bff; }
+        p, li { line-height: 1.7; color: #495057; }
+        .iframe-container { position: relative; overflow: hidden; width: 100%; padding-top: 60%; margin: 2rem 0; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .iframe-container iframe { position: absolute; top: 0; left: 0; bottom: 0; right: 0; width: 100%; height: 100%; border: none; }
+        footer { text-align: center; padding: 2rem; background-color: #343a40; color: white; margin-top: 2rem; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Simple Harmonic Oscillator</h1>
+        <p>Pure sinusoidal motion with no damping and no driving—just the restoring force doing its work.</p>
+    </header>
+    <main>
+        <article>
+            <h2>The Minimal Model</h2>
+            <p>
+                Strip a mass–spring system down to its essentials, and you get the simple harmonic oscillator. With no friction to sap energy and no external forcing, the equation of motion reduces to a perfectly balanced exchange between kinetic and potential energy. The resulting motion is sinusoidal, with a frequency set entirely by the spring constant.
+            </p>
+
+            <div class="iframe-container">
+                <iframe src="embed.html" title="Interactive Simple Harmonic Oscillator"></iframe>
+            </div>
+
+            <h2>The Governing Equation</h2>
+            <p>
+                Assuming a unit mass, the motion satisfies
+            </p>
+             \frac{d^2 x}{dt^2} + kx = 0. 
+            <p>
+                The parameter \(k\) is the spring constant. Its square root determines the natural angular frequency \(\omega_0 = \sqrt{k}\) and the period \(T = 2\pi/\omega_0\). The total mechanical energy is conserved:
+            </p>
+             E = \tfrac{1}{2} k x^2 + \tfrac{1}{2} v^2. 
+
+            <h2>What to Try</h2>
+            <ul>
+                <li>Set an initial displacement with zero velocity and watch the phase portrait trace a perfect horizontal ellipse.</li>
+                <li>Give the mass an initial push instead, leaving the displacement at zero. The ellipse rotates to align with the velocity axis.</li>
+                <li>Adjust the spring constant and notice how the ellipse squeezes in the velocity direction while the period decreases.</li>
+                <li>Choose mismatched initial position and velocity to plot a generic ellipse whose area reports the conserved energy.</li>
+            </ul>
+
+            <p>
+                These same phase-space ellipses appear in everything from small-angle pendulums to electromagnetic oscillators, making the simple harmonic oscillator an indispensable baseline model.
+            </p>
+        </article>
+    </main>
+    <footer>
+        <p>&copy; 2025 Interactive Educational Visualizations. | <a href="../../index.html">Back to Gallery</a></p>
+    </footer>
+</body>
+</html>
