@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
@@ -27,13 +27,13 @@
 <body>
     <header>
         <h1>Simple Harmonic Oscillator</h1>
-        <p>Pure sinusoidal motion with no damping and no driving—just the restoring force doing its work.</p>
+        <p>Pure sinusoidal motion with no damping and no driving - just the restoring force doing its work.</p>
     </header>
     <main>
         <article>
             <h2>The Minimal Model</h2>
             <p>
-                Strip a mass–spring system down to its essentials, and you get the simple harmonic oscillator. With no friction to sap energy and no external forcing, the equation of motion reduces to a perfectly balanced exchange between kinetic and potential energy. The resulting motion is sinusoidal, with a frequency set entirely by the spring constant.
+                Strip a mass-spring system down to its essentials, and you get the simple harmonic oscillator. With no friction to sap energy and no external forcing, the equation of motion reduces to a perfectly balanced exchange between kinetic and potential energy. The resulting motion is sinusoidal, with a frequency set entirely by the spring constant.
             </p>
 
             <div class="iframe-container">
@@ -49,6 +49,19 @@
                 The parameter \(k\) is the spring constant. Its square root determines the natural angular frequency \(\omega_0 = \sqrt{k}\) and the period \(T = 2\pi/\omega_0\). The total mechanical energy is conserved:
             </p>
              \(E = \tfrac{1}{2} k x^2 + \tfrac{1}{2} v^2.\)  
+
+            <h2>Reading the Live Meters</h2>
+            <p>
+                The dashboard in the interactive keeps a running tally of the system state so you can connect the plots to the underlying mechanics:
+            </p>
+            <ul>
+                <li><strong>t</strong> is the simulation time in seconds. It advances only while the animation is running.</li>
+                <li><strong>x</strong> measures the instantaneous displacement of the mass from equilibrium (metres).</li>
+                <li><strong>v</strong> is the velocity (metres per second), the rate at which the mass crosses the midpoint.</li>
+                <li><strong>E</strong> is the total mechanical energy. With no damping it should remain constant; any change hints at numerical round-off.</li>
+                <li><strong>\(\omega_0\)</strong> is the natural angular frequency dictated by the current spring constant, \(\omega_0 = \sqrt{k/m}\).</li>
+                <li><strong>T</strong> is the period of one complete oscillation, \(T = 2\pi/\omega_0\).</li>
+            </ul>
 
             <h2>What to Try</h2>
             <ul>
@@ -68,3 +81,4 @@
     </footer>
 </body>
 </html>
+
