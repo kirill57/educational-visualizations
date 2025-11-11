@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>2x2 Linear Systems</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; margin: 0; background-color: #f0f2f5; color: #1c1e21; }
+        header { background-color: #343a40; color: white; padding: 2rem; text-align: center; }
+        header h1 { margin: 0; font-size: 2.5rem; }
+        main { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+        article { background-color: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { border-bottom: 2px solid #007bff; padding-bottom: 0.5rem; margin-top: 2rem; color: #007bff; }
+        p, li { line-height: 1.7; color: #495057; }
+        .iframe-container { position: relative; overflow: hidden; width: 100%; padding-top: 70%; margin: 2rem 0; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .iframe-container iframe { position: absolute; top: 0; left: 0; bottom: 0; right: 0; width: 100%; height: 100%; border: none; }
+        footer { text-align: center; padding: 2rem; background-color: #343a40; color: white; margin-top: 2rem; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .phase-portrait-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin: 2rem 0; }
+        .phase-case { background-color: #f8f9fa; padding: 1rem; border-radius: 8px; border-left: 4px solid #007bff; }
+        .phase-case h3 { margin-top: 0; color: #007bff; font-size: 1.1rem; }
+        .phase-case p { margin: 0.5rem 0; font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>2x2 Linear Systems</h1>
+        <p>Understanding phase portraits through eigenvalues, trace, and determinant</p>
+    </header>
+    <main>
+        <article>
+            <h2>Why Linear Systems Matter</h2>
+            <p>
+                Linear systems of ordinary differential equations form the foundation of dynamical systems theory. They appear everywhere: in mechanical vibrations, electrical circuits, population dynamics, and as the linearization of more complex nonlinear systems near equilibrium points. The beauty of linear systems lies in their complete classification—every 2×2 linear system falls into one of eight distinct categories based solely on its eigenvalues.
+            </p>
+            <p>
+                The phase portrait—a visual representation of all possible trajectories—reveals the system's long-term behavior at a glance. Whether trajectories spiral inward, diverge outward, or form closed loops depends entirely on the eigenvalues of the system's coefficient matrix.
+            </p>
+
+            <div class="iframe-container">
+                <iframe src="embed.html" title="Interactive 2x2 Linear System Analyzer"></iframe>
+            </div>
+
+            <h2>The Governing Equations</h2>
+            <p>
+                A 2×2 linear system of ODEs has the form:
+            </p>
+            $$\frac{d}{dt}\begin{pmatrix} x \\ y \end{pmatrix} = \begin{pmatrix} a & b \\ c & d \end{pmatrix}\begin{pmatrix} x \\ y \end{pmatrix}$$
+            <p>
+                where \(A = \begin{pmatrix} a & b \\ c & d \end{pmatrix}\) is a constant matrix. The behavior of this system is determined by the eigenvalues \(\lambda_1\) and \(\lambda_2\) of \(A\), which satisfy the characteristic equation:
+            </p>
+            $$\det(A - \lambda I) = \lambda^2 - T\lambda + D = 0$$
+            <p>
+                where \(T = a + d\) is the <strong>trace</strong> and \(D = ad - bc\) is the <strong>determinant</strong> of \(A\). The discriminant \(\Delta = T^2 - 4D\) determines whether the eigenvalues are real or complex.
+            </p>
+
+            <h2>Classification of Phase Portraits</h2>
+            <p>
+                The eight distinct types of phase portraits are organized by the nature of the eigenvalues:
+            </p>
+
+            <div class="phase-portrait-grid">
+                <div class="phase-case">
+                    <h3>Stable Node</h3>
+                    <p><strong>Eigenvalues:</strong> Both real, negative, and distinct</p>
+                    <p><strong>Behavior:</strong> Curved paths converging to the origin. All trajectories approach equilibrium exponentially.</p>
+                </div>
+
+                <div class="phase-case">
+                    <h3>Unstable Node</h3>
+                    <p><strong>Eigenvalues:</strong> Both real, positive, and distinct</p>
+                    <p><strong>Behavior:</strong> Curved paths diverging from the origin. All trajectories move away from equilibrium.</p>
+                </div>
+
+                <div class="phase-case">
+                    <h3>Saddle</h3>
+                    <p><strong>Eigenvalues:</strong> Real with opposite signs</p>
+                    <p><strong>Behavior:</strong> Hyperbolic paths with one stable direction (eigenvector for negative eigenvalue) and one unstable direction (eigenvector for positive eigenvalue).</p>
+                </div>
+
+                <div class="phase-case">
+                    <h3>Stable Spiral</h3>
+                    <p><strong>Eigenvalues:</strong> Complex conjugate pair with negative real part</p>
+                    <p><strong>Behavior:</strong> Trajectories spiral inward toward the origin, oscillating as they approach equilibrium.</p>
+                </div>
+
+                <div class="phase-case">
+                    <h3>Unstable Spiral</h3>
+                    <p><strong>Eigenvalues:</strong> Complex conjugate pair with positive real part</p>
+                    <p><strong>Behavior:</strong> Trajectories spiral outward from the origin, oscillating as they diverge from equilibrium.</p>
+                </div>
+
+                <div class="phase-case">
+                    <h3>Center</h3>
+                    <p><strong>Eigenvalues:</strong> Purely imaginary (zero real part)</p>
+                    <p><strong>Behavior:</strong> Closed elliptical orbits around the origin. The system is conservative with no energy dissipation.</p>
+                </div>
+
+                <div class="phase-case">
+                    <h3>Stable Proper Node (Star)</h3>
+                    <p><strong>Eigenvalues:</strong> Real, negative, and equal with two independent eigenvectors</p>
+                    <p><strong>Behavior:</strong> Straight radial paths converging to the origin. All trajectories approach along straight lines.</p>
+                </div>
+
+                <div class="phase-case">
+                    <h3>Stable Improper Node (Degenerate)</h3>
+                    <p><strong>Eigenvalues:</strong> Real, negative, and equal with only one independent eigenvector</p>
+                    <p><strong>Behavior:</strong> Parabolic paths converging to the origin with shearing. Trajectories curve as they approach equilibrium.</p>
+                </div>
+            </div>
+
+            <h2>The Trace-Determinant Diagram</h2>
+            <p>
+                The visualization above includes a trace-determinant diagram that maps every possible 2×2 linear system onto a plane. The horizontal axis represents the trace \(T\), and the vertical axis represents the determinant \(D\). The parabola \(D = T^2/4\) separates real eigenvalues (below) from complex eigenvalues (above). This diagram provides a complete classification:
+            </p>
+            <ul>
+                <li><strong>Below the parabola (\(D < T^2/4\)):</strong> Real eigenvalues. The sign of \(T\) determines stability (negative = stable, positive = unstable).</li>
+                <li><strong>Above the parabola (\(D > T^2/4\)):</strong> Complex eigenvalues. The sign of \(T\) determines whether spirals are stable (negative) or unstable (positive).</li>
+                <li><strong>On the parabola (\(D = T^2/4\)):</strong> Repeated eigenvalues, leading to proper or improper nodes.</li>
+                <li><strong>Below the T-axis (\(D < 0\)):</strong> Saddle points, with one positive and one negative eigenvalue.</li>
+            </ul>
+
+            <h2>What to Explore</h2>
+            <p>
+                Use the interactive visualization to investigate:
+            </p>
+            <ul>
+                <li>Select different system types from the dropdown to see how each category produces a distinct phase portrait.</li>
+                <li>Fine-tune the eigenvalues using the sliders to see how small changes affect the trajectories.</li>
+                <li>Observe how the trace-determinant diagram updates as you adjust parameters, showing the system's position in classification space.</li>
+                <li>Notice how complex eigenvalues automatically enforce conjugate pairs (for real matrices), and how this creates the characteristic spiral patterns.</li>
+                <li>Compare proper and improper nodes—both have repeated eigenvalues, but the geometric structure differs dramatically.</li>
+            </ul>
+
+            <p>
+                This classification extends naturally to higher-dimensional linear systems, where the eigenvalues continue to determine stability and the qualitative nature of solutions. Understanding these eight cases provides the foundation for analyzing more complex nonlinear systems through linearization.
+            </p>
+        </article>
+    </main>
+    <footer>
+        <p>&copy; 2025 Interactive Educational Visualizations. | <a href="../../index.html">Back to Gallery</a></p>
+    </footer>
+</body>
+</html>
+

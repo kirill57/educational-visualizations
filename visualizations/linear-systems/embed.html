@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2x2 Linear System Analyzer</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Inter font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Custom styles for dark mode and a professional feel */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Dark mode sliders */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            background-color: #4a5568; /* gray-700 */
+            border-radius: 4px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background-color: #cbd5e0; /* gray-400 */
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background-color: #cbd5e0; /* gray-400 */
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.2s ease;
+        }
+
+        input[type="range"]:hover::-webkit-slider-thumb {
+            background-color: #e2e8f0; /* gray-300 */
+        }
+        input[type="range"]:hover::-moz-range-thumb {
+            background-color: #e2e8f0; /* gray-300 */
+        }
+
+        /* Dark mode select */
+        select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23CBD5E0%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+            background-size: .7em;
+            background-repeat: no-repeat;
+            background-position: right 0.7rem center;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200 min-h-screen p-4 md:p-8">
+    
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-3xl font-bold text-center mb-1 text-white">Interactive 2x2 Linear System Analyzer</h1>
+        <p class="text-center text-gray-400 mb-8">Explore phase portraits by controlling eigenvalues and system type.</p>
+
+        <div class="flex flex-col lg:flex-row gap-6">
+            
+            <!-- CONTROLS PANEL (Left) -->
+            <div class="w-full lg:w-1/4 bg-gray-800 p-6 rounded-lg shadow-xl">
+                
+                <!-- Case Selector -->
+                <div class="mb-6">
+                    <label for="caseSelector" class="block text-sm font-medium text-gray-300 mb-2">1. Select System Type</label>
+                    <select id="caseSelector" class="w-full p-3 bg-gray-700 text-white border border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="stable_node">Stable Node</option>
+                        <option value="unstable_node">Unstable Node</option>
+                        <option value="saddle">Saddle</option>
+                        <option value="stable_spiral">Stable Spiral</option>
+                        <option value="unstable_spiral">Unstable Spiral</option>
+                        <option value="center">Center</option>
+                        <option value="proper_node">Proper Node (Star)</option>
+                        <option value="improper_node">Improper Node (Degenerate)</option>
+                    </select>
+                </div>
+
+                <!-- Eigenvalue Controls -->
+                <div class="mb-4">
+                    <h2 class="text-sm font-medium text-gray-300 mb-3">2. Fine-Tune Eigenvalues</h2>
+                    
+                    <!-- Lambda 1 -->
+                    <div class="bg-gray-700 p-4 rounded-lg mb-3">
+                        <label class="block text-lg font-semibold text-white mb-2">\(\lambda_1 = \text{Re}_1 + i \cdot \text{Im}_1\)</label>
+                        <div class="space-y-3">
+                            <div>
+                                <label for="lambda1_real" class="flex justify-between text-sm text-gray-400">
+                                    <span>Real Part (\(\text{Re}_1\))</span>
+                                    <span id="l1_real_val" class="font-mono">0.00</span>
+                                </label>
+                                <input type="range" id="lambda1_real" min="-3" max="3" step="0.05" value="-2" class="mt-1">
+                            </div>
+                            <div>
+                                <label for="lambda1_imag" class="flex justify-between text-sm text-gray-400">
+                                    <span>Imaginary Part (\(\text{Im}_1\))</span>
+                                    <span id="l1_imag_val" class="font-mono">0.00</span>
+                                </label>
+                                <input type="range" id="lambda1_imag" min="-3" max="3" step="0.05" value="0" class="mt-1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lambda 2 -->
+                    <div class="bg-gray-700 p-4 rounded-lg">
+                        <label class="block text-lg font-semibold text-white mb-2">\(\lambda_2 = \text{Re}_2 + i \cdot \text{Im}_2\)</label>
+                        <div class="space-y-3">
+                            <div>
+                                <label for="lambda2_real" class="flex justify-between text-sm text-gray-400">
+                                    <span>Real Part (\(\text{Re}_2\))</span>
+                                    <span id="l2_real_val" class="font-mono">0.00</span>
+                                </label>
+                                <input type="range" id="lambda2_real" min="-3" max="3" step="0.05" value="-1" class="mt-1">
+                            </div>
+                            <div>
+                                <label for="lambda2_imag" class="flex justify-between text-sm text-gray-400">
+                                    <span>Imaginary Part (\(\text{Im}_2\))</span>
+                                    <span id="l2_imag_val" class="font-mono">0.00</span>
+                                </label>
+                                <input type="range" id="lambda2_imag" min="-3" max="3" step="0.05" value="0" class="mt-1">
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">Note: If \(\text{Im}_1 \neq 0\), the system will enforce \(\lambda_2 = \bar{\lambda}_1\) (complex conjugate) for a real matrix.</p>
+                </div>
+
+                <!-- System Properties -->
+                <div class="mt-6">
+                    <h2 class="text-sm font-medium text-gray-300 mb-3">3. System Properties</h2>
+                    <div class="bg-gray-700 p-4 rounded-lg space-y-2">
+                        <div class="flex justify-between items-center text-lg">
+                            <span class="text-gray-400">Trace (\(T\))</span>
+                            <span id="trace_val" class="font-mono text-white">0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center text-lg">
+                            <span class="text-gray-400">Determinant (\(D\))</span>
+                            <span id="det_val" class="font-mono text-white">0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center text-lg">
+                            <span class="text-gray-400">Discriminant (\(\Delta\))</span>
+                            <span id="disc_val" class="font-mono text-white">0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Trace-Determinant Diagram (Middle) -->
+            <div class="w-full lg:w-1/3 bg-gray-800 p-4 rounded-lg shadow-xl">
+                <h2 class="text-xl font-semibold text-white mb-4">Trace-Determinant Diagram</h2>
+                <canvas id="tdCanvas" class="w-full bg-gray-900 rounded-md border border-gray-700" height="600"></canvas>
+            </div>
+
+            <!-- Phase Portrait (Right) -->
+            <div class="w-full lg:w-5/12 bg-gray-800 p-4 rounded-lg shadow-xl">
+                <h2 class="text-xl font-semibold text-white mb-4">Phase Portrait</h2>
+                <canvas id="ppCanvas" class="w-full bg-gray-900 rounded-md border border-gray-700" height="600"></canvas>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MathJax for rendering LaTeX -->
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+
+    <!-- Main Application Logic -->
+    <script>
+        // Wait for window to load to ensure all elements are present
+        window.onload = () => {
+            // --- DOM Elements ---
+            const caseSelector = document.getElementById('caseSelector');
+            
+            const l1_real_slider = document.getElementById('lambda1_real');
+            const l1_imag_slider = document.getElementById('lambda1_imag');
+            const l2_real_slider = document.getElementById('lambda2_real');
+            const l2_imag_slider = document.getElementById('lambda2_imag');
+            
+            const l1_real_val = document.getElementById('l1_real_val');
+            const l1_imag_val = document.getElementById('l1_imag_val');
+            const l2_real_val = document.getElementById('l2_real_val');
+            const l2_imag_val = document.getElementById('l2_imag_val');
+
+            const trace_val = document.getElementById('trace_val');
+            const det_val = document.getElementById('det_val');
+            const disc_val = document.getElementById('disc_val');
+
+            const tdCanvas = document.getElementById('tdCanvas');
+            const ppCanvas = document.getElementById('ppCanvas');
+            const tdCtx = tdCanvas.getContext('2d');
+            const ppCtx = ppCanvas.getContext('2d');
+            
+            // --- State ---
+            let currentForm = 'companion'; // 'companion', 'proper', 'improper'
+
+            // --- Presets ---
+            // Define the canonical forms and their eigenvalues
+            const PRESETS = {
+                'stable_node':     { re1: -2.0, im1: 0.0, re2: -1.0, im2: 0.0, form: 'companion' },
+                'unstable_node':   { re1: 2.0,  im1: 0.0, re2: 1.0,  im2: 0.0, form: 'companion' },
+                'saddle':          { re1: 2.0,  im1: 0.0, re2: -1.0, im2: 0.0, form: 'companion' },
+                'stable_spiral':   { re1: -0.5, im1: 2.0, re2: -0.5, im2: -2.0, form: 'companion' },
+                'unstable_spiral': { re1: 0.5,  im1: 2.0, re2: 0.5,  im2: -2.0, form: 'companion' },
+                'center':          { re1: 0.0,  im1: 2.0, re2: 0.0,  im2: -2.0, form: 'companion' },
+                'proper_node':     { re1: -2.0, im1: 0.0, re2: -2.0, im2: 0.0, form: 'proper' },
+                'improper_node':   { re1: -2.0, im1: 0.0, re2: -2.0, im2: 0.0, form: 'improper' }
+            };
+
+            // --- Canvas Sizing ---
+            // Helper to resize canvases to their display size
+            const resizeCanvas = (canvas) => {
+                const { width, height } = canvas.getBoundingClientRect();
+                if (canvas.width !== width || canvas.height !== height) {
+                    canvas.width = width;
+                    canvas.height = height;
+                    return true; // Resized
+                }
+                return false; // Not resized
+            };
+            
+            // --- Coordinate Transforms ---
+            
+            // T-D Canvas: (T, D) -> (x, y)
+            // T range: -5 to 5, D range: -5 to 5 (approx)
+            const td_scale = tdCanvas.width / 12;
+            const td_origin_x = tdCanvas.width / 2;
+            const td_origin_y = tdCanvas.height * 0.6;
+            
+            const td_map = (T, D) => {
+                return {
+                    x: td_origin_x + T * td_scale,
+                    y: td_origin_y - D * td_scale
+                };
+            };
+            
+            // Phase Portrait Canvas: (x, y) -> (canvasX, canvasY)
+            // x range: -5 to 5, y range: -5 to 5
+            const pp_scale = ppCanvas.width / 12;
+            const pp_origin_x = ppCanvas.width / 2;
+            const pp_origin_y = ppCanvas.height / 2;
+            
+            const pp_map = (x, y) => {
+                return {
+                    cx: pp_origin_x + x * pp_scale,
+                    cy: pp_origin_y - y * pp_scale
+                };
+            };
+
+            // --- Drawing Functions ---
+
+            /**
+             * Draws the Trace-Determinant diagram background and current point
+             */
+            function drawTraceDeterminant(currentT, currentD) {
+                resizeCanvas(tdCanvas);
+                const w = tdCanvas.width;
+                const h = tdCanvas.height;
+                const td_scale = w / 12;
+                const td_origin_x = w / 2;
+                const td_origin_y = h * 0.6;
+                
+                const map = (T, D) => ({
+                    x: td_origin_x + T * td_scale,
+                    y: td_origin_y - D * td_scale
+                });
+
+                tdCtx.clearRect(0, 0, w, h);
+                tdCtx.lineCap = "round";
+                tdCtx.lineWidth = 1.5;
+
+                // --- Draw Regions ---
+                tdCtx.globalAlpha = 0.15;
+                
+                // Stable Spirals (T < 0, D > T^2/4)
+                tdCtx.fillStyle = '#3b82f6'; // blue-500
+                tdCtx.beginPath();
+                tdCtx.moveTo(map(-6, 25).x, map(-6, 25).y);
+                for (let T = -6; T <= 0; T += 0.1) {
+                    tdCtx.lineTo(map(T, T*T/4).x, map(T, T*T/4).y);
+                }
+                tdCtx.lineTo(map(0, 0).x, map(0, 0).y);
+                tdCtx.lineTo(map(-6, 0).x, map(-6, 0).y);
+                tdCtx.closePath();
+                tdCtx.fill();
+
+                // Unstable Spirals (T > 0, D > T^2/4)
+                tdCtx.fillStyle = '#ef4444'; // red-500
+                tdCtx.beginPath();
+                tdCtx.moveTo(map(0, 0).x, map(0, 0).y);
+                for (let T = 0; T <= 6; T += 0.1) {
+                    tdCtx.lineTo(map(T, T*T/4).x, map(T, T*T/4).y);
+                }
+                tdCtx.lineTo(map(6, 25).x, map(6, 25).y);
+                tdCtx.lineTo(map(0, 25).x, map(0, 25).y);
+                tdCtx.closePath();
+                tdCtx.fill();
+
+                // Stable Nodes (T < 0, 0 < D < T^2/4)
+                tdCtx.fillStyle = '#22c55e'; // green-500
+                tdCtx.beginPath();
+                tdCtx.moveTo(map(-6, 0).x, map(-6, 0).y);
+                tdCtx.lineTo(map(0, 0).x, map(0, 0).y);
+                for (let T = 0; T >= -6; T -= 0.1) {
+                    tdCtx.lineTo(map(T, T*T/4).x, map(T, T*T/4).y);
+                }
+                tdCtx.closePath();
+                tdCtx.fill();
+                
+                // Unstable Nodes (T > 0, 0 < D < T^2/4)
+                tdCtx.fillStyle = '#f97316'; // orange-500
+                tdCtx.beginPath();
+                tdCtx.moveTo(map(0, 0).x, map(0, 0).y);
+                tdCtx.lineTo(map(6, 0).x, map(6, 0).y);
+                for (let T = 6; T >= 0; T -= 0.1) {
+                    tdCtx.lineTo(map(T, T*T/4).x, map(T, T*T/4).y);
+                }
+                tdCtx.closePath();
+                tdCtx.fill();
+
+                // Saddles (D < 0)
+                tdCtx.fillStyle = '#a855f7'; // purple-500
+                tdCtx.beginPath();
+                tdCtx.rect(0, map(0, 0).y, w, h - map(0, 0).y);
+                tdCtx.fill();
+                
+                tdCtx.globalAlpha = 1.0;
+
+                // --- Draw Axes ---
+                tdCtx.strokeStyle = '#6b7280'; // gray-500
+                tdCtx.lineWidth = 2;
+                // D-axis (T=0)
+                tdCtx.beginPath();
+                tdCtx.moveTo(map(0, -5).x, map(0, -5).y);
+                tdCtx.lineTo(map(0, 5).x, map(0, 5).y);
+                tdCtx.stroke();
+                // T-axis (D=0)
+                tdCtx.beginPath();
+                tdCtx.moveTo(map(-5, 0).x, map(-5, 0).y);
+                tdCtx.lineTo(map(5, 0).x, map(5, 0).y);
+                tdCtx.stroke();
+                
+                // --- Draw Parabola (D = T^2 / 4) ---
+                tdCtx.strokeStyle = '#f3f4f6'; // gray-100
+                tdCtx.lineWidth = 3;
+                tdCtx.beginPath();
+                let p_start = map(-6, 36/4);
+                tdCtx.moveTo(p_start.x, p_start.y);
+                for (let T = -6; T <= 6; T += 0.1) {
+                    let p = map(T, T*T / 4);
+                    tdCtx.lineTo(p.x, p.y);
+                }
+                tdCtx.stroke();
+
+                // --- Draw Labels ---
+                tdCtx.fillStyle = '#f3f4f6'; // gray-100
+                tdCtx.font = '16px Inter';
+                tdCtx.textAlign = 'center';
+                tdCtx.textBaseline = 'middle';
+                tdCtx.fillText("T", map(5.5, 0).x, map(5.5, 0).y);
+                tdCtx.fillText("D", map(0, 5.5).x, map(0, 5.5).y);
+                
+                tdCtx.font = 'bold 14px Inter';
+                tdCtx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                tdCtx.fillText("Stable Spirals", map(-3, 6).x, map(-3, 6).y);
+                tdCtx.fillText("Unstable Spirals", map(3, 6).x, map(3, 6).y);
+                tdCtx.fillText("Stable Nodes", map(-4.5, 2).x, map(-4.5, 2).y);
+                tdCtx.fillText("Unstable Nodes", map(4.5, 2).x, map(4.5, 2).y);
+                tdCtx.fillText("Saddles", map(0, -3).x, map(0, -3).y);
+                tdCtx.fillText("Centers", map(0, 3).x, map(0, 3).y + 10);
+                
+                tdCtx.save();
+                tdCtx.translate(map(-4, 9).x, map(-4, 9).y);
+                tdCtx.rotate(-Math.PI / 4.5);
+                tdCtx.fillText("Repeated Roots", 0, 0);
+                tdCtx.restore();
+
+                // --- Draw Current Point ---
+                tdCtx.beginPath();
+                let p_current = map(currentT, currentD);
+                tdCtx.arc(p_current.x, p_current.y, 8, 0, 2 * Math.PI);
+                tdCtx.fillStyle = '#fef08a'; // yellow-200
+                tdCtx.fill();
+                tdCtx.strokeStyle = '#1f2937'; // gray-800
+                tdCtx.lineWidth = 3;
+                tdCtx.stroke();
+            }
+
+            /**
+             * Draws the phase portrait for a given matrix A = [[a, b], [c, d]]
+             */
+            function drawPhasePortrait(A) {
+                resizeCanvas(ppCanvas);
+                const w = ppCanvas.width;
+                const h = ppCanvas.height;
+                const pp_scale = w / 12;
+                const pp_origin_x = w / 2;
+                const pp_origin_y = h / 2;
+
+                const map = (x, y) => ({
+                    cx: pp_origin_x + x * pp_scale,
+                    cy: pp_origin_y - y * pp_scale
+                });
+                
+                const unmap = (cx, cy) => ({
+                    x: (cx - pp_origin_x) / pp_scale,
+                    y: (pp_origin_y - cy) / pp_scale
+                });
+
+                ppCtx.clearRect(0, 0, w, h);
+                ppCtx.lineCap = "round";
+                
+                const [a, b] = A[0];
+                const [c, d] = A[1];
+
+                // --- Draw Vector Field ---
+                ppCtx.strokeStyle = '#4b5563'; // gray-600
+                ppCtx.lineWidth = 1;
+                const gridSize = 25;
+                const vecLength = 0.35;
+                for (let i = 0; i <= gridSize; i++) {
+                    for (let j = 0; j <= gridSize; j++) {
+                        let cx = (w / gridSize) * i;
+                        let cy = (h / gridSize) * j;
+                        let { x, y } = unmap(cx, cy);
+                        
+                        let dx = a * x + b * y;
+                        let dy = c * x + d * y;
+                        
+                        let mag = Math.sqrt(dx * dx + dy * dy);
+                        if (mag === 0) continue;
+                        
+                        let u_dx = (dx / mag) * vecLength;
+                        let u_dy = (dy / mag) * vecLength;
+                        
+                        let p1 = map(x - u_dx / 2, y - u_dy / 2);
+                        let p2 = map(x + u_dx / 2, y + u_dy / 2);
+                        
+                        ppCtx.beginPath();
+                        ppCtx.moveTo(p1.cx, p1.cy);
+                        ppCtx.lineTo(p2.cx, p2.cy);
+                        ppCtx.stroke();
+                        
+                        // Arrowhead
+                        let p_arrow = map(x + u_dx / 2, y + u_dy / 2);
+                        let angle = Math.atan2(p2.cy - p1.cy, p2.cx - p1.cx);
+                        ppCtx.beginPath();
+                        ppCtx.moveTo(p_arrow.cx, p_arrow.cy);
+                        ppCtx.lineTo(p_arrow.cx - 5 * Math.cos(angle - Math.PI / 6), p_arrow.cy - 5 * Math.sin(angle - Math.PI / 6));
+                        ppCtx.moveTo(p_arrow.cx, p_arrow.cy);
+                        ppCtx.lineTo(p_arrow.cx - 5 * Math.cos(angle + Math.PI / 6), p_arrow.cy - 5 * Math.sin(angle + Math.PI / 6));
+                        ppCtx.stroke();
+                    }
+                }
+
+                // --- Draw Trajectories (Integral Curves) ---
+                ppCtx.strokeStyle = '#f3f4f6'; // gray-100
+                ppCtx.lineWidth = 1.5;
+                const dt = 0.02;
+                const numSteps = 250;
+                
+                let startPoints = [];
+                for(let r = 1; r <= 5; r += 1.5) {
+                    for(let i = 0; i < 12; i++) {
+                        let angle = (i / 12) * 2 * Math.PI;
+                        startPoints.push({x: r * Math.cos(angle), y: r * Math.sin(angle)});
+                    }
+                }
+
+                startPoints.forEach(p0 => {
+                    // Forward in time
+                    ppCtx.beginPath();
+                    let { cx, cy } = map(p0.x, p0.y);
+                    ppCtx.moveTo(cx, cy);
+                    let x = p0.x, y = p0.y;
+                    for (let i = 0; i < numSteps; i++) {
+                        let dx = (a * x + b * y) * dt;
+                        let dy = (c * x + d * y) * dt;
+                        x += dx;
+                        y += dy;
+                        let p_next = map(x, y);
+                        // Continue as long as the point is within canvas bounds (with small margin)
+                        if (p_next.cx < -10 || p_next.cx > w + 10 || p_next.cy < -10 || p_next.cy > h + 10) break;
+                        ppCtx.lineTo(p_next.cx, p_next.cy);
+                    }
+                    ppCtx.stroke();
+                    
+                    // Backward in time
+                    ppCtx.beginPath();
+                    ppCtx.moveTo(cx, cy);
+                    x = p0.x; y = p0.y;
+                    for (let i = 0; i < numSteps; i++) {
+                        let dx = (a * x + b * y) * (-dt);
+                        let dy = (c * x + d * y) * (-dt);
+                        x += dx;
+                        y += dy;
+                        let p_prev = map(x, y);
+                        // Continue as long as the point is within canvas bounds (with small margin)
+                        if (p_prev.cx < -10 || p_prev.cx > w + 10 || p_prev.cy < -10 || p_prev.cy > h + 10) break;
+                        ppCtx.lineTo(p_prev.cx, p_prev.cy);
+                    }
+                    ppCtx.stroke();
+                });
+
+                // --- Draw Axes ---
+                ppCtx.strokeStyle = '#6b7280'; // gray-500
+                ppCtx.lineWidth = 2;
+                // X-axis
+                ppCtx.beginPath();
+                ppCtx.moveTo(map(-6, 0).cx, map(-6, 0).cy);
+                ppCtx.lineTo(map(6, 0).cx, map(6, 0).cy);
+                ppCtx.stroke();
+                // Y-axis
+                ppCtx.beginPath();
+                ppCtx.moveTo(map(0, -6).cx, map(0, -6).cy);
+                ppCtx.lineTo(map(0, 6).cx, map(0, 6).cy);
+                ppCtx.stroke();
+                
+                ppCtx.fillStyle = '#f3f4f6';
+                ppCtx.font = '16px Inter';
+                ppCtx.fillText("x", map(5.7, 0).cx, map(5.7, 0).cy + 15);
+                ppCtx.fillText("y", map(0, 5.7).cx - 15, map(0, 5.7).cy);
+            }
+
+            // --- Main Update Function ---
+            function updateSystem() {
+                // 1. Read values from sliders
+                let re1 = parseFloat(l1_real_slider.value);
+                let im1 = parseFloat(l1_imag_slider.value);
+                let re2 = parseFloat(l2_real_slider.value);
+                let im2 = parseFloat(l2_imag_slider.value);
+                
+                // 2. Update value readouts
+                l1_real_val.textContent = re1.toFixed(2);
+                l1_imag_val.textContent = im1.toFixed(2);
+                l2_real_val.textContent = re2.toFixed(2);
+                l2_imag_val.textContent = im2.toFixed(2);
+
+                // 3. Calculate system properties
+                // T = (re1 + im1*i) + (re2 + im2*i) = (re1 + re2)
+                const T = re1 + re2;
+                // D = (re1 + im1*i) * (re2 + im2*i) = (re1*re2 - im1*im2)
+                const D = (re1 * re2) - (im1 * im2);
+                // Discriminant = T^2 - 4D
+                const Delta = T * T - 4 * D;
+                
+                trace_val.textContent = T.toFixed(2);
+                det_val.textContent = D.toFixed(2);
+                disc_val.textContent = Delta.toFixed(2);
+
+                // 4. Determine Matrix A
+                let A = [[0, 0], [0, 0]];
+                let lambda = re1; // Used for degenerate cases
+                
+                // Re-identify form from sliders if user is not on a preset
+                if (Math.abs(im1) > 0.01) {
+                    currentForm = 'companion'; // Force complex to companion
+                } else if (Math.abs(Delta) > 0.1) {
+                    currentForm = 'companion'; // Force distinct real to companion
+                } else if (currentForm !== 'proper' && currentForm !== 'improper') {
+                    // Default to improper if user slides to repeated roots
+                    currentForm = 'improper'; 
+                }
+
+                if (currentForm === 'proper') {
+                    A = [[lambda, 0], [0, lambda]];
+                } else if (currentForm === 'improper') {
+                    A = [[lambda, 1], [0, lambda]];
+                } else {
+                    // Standard companion matrix: A = [[0, 1], [-D, T]]
+                    // This matrix has char. eq: k^2 - T*k + D = 0
+                    A = [[0, 1], [-D, T]];
+                }
+
+                // 5. Redraw canvases
+                drawTraceDeterminant(T, D);
+                drawPhasePortrait(A);
+            }
+
+            // --- Event Handlers ---
+
+            function handleCaseChange() {
+                const selectedCase = caseSelector.value;
+                const preset = PRESETS[selectedCase];
+
+                if (!preset) return;
+
+                // Set sliders to preset values
+                l1_real_slider.value = preset.re1;
+                l1_imag_slider.value = preset.im1;
+                l2_real_slider.value = preset.re2;
+                l2_imag_slider.value = preset.im2;
+                
+                // Set the matrix form
+                currentForm = preset.form;
+                
+                // Enforce coupling for complex cases
+                if (preset.im1 !== 0) {
+                    l2_real_slider.disabled = true;
+                    l2_imag_slider.disabled = true;
+                    l2_real_slider.style.opacity = 0.5;
+                    l2_imag_slider.style.opacity = 0.5;
+                } else {
+                    l2_real_slider.disabled = false;
+                    l2_imag_slider.disabled = false;
+                    l2_real_slider.style.opacity = 1;
+                    l2_imag_slider.style.opacity = 1;
+                }
+
+                // Update system
+                updateSystem();
+                
+                // Re-render MathJax
+                if (window.MathJax) {
+                    window.MathJax.typeset();
+                }
+            }
+            
+            function handleSliderInput() {
+                let re1 = parseFloat(l1_real_slider.value);
+                let im1 = parseFloat(l1_imag_slider.value);
+
+                // Enforce complex conjugate pair
+                if (im1 !== 0) {
+                    // Lock lambda 2 to be the conjugate
+                    l2_real_slider.value = re1;
+                    l2_imag_slider.value = -im1;
+                    l2_real_slider.disabled = true;
+                    l2_imag_slider.disabled = true;
+                    l2_real_slider.style.opacity = 0.5;
+                    l2_imag_slider.style.opacity = 0.5;
+                    currentForm = 'companion'; // Complex must be companion form
+                } else {
+                    // Unlock lambda 2
+                    l2_real_slider.disabled = false;
+                    l2_imag_slider.disabled = false;
+                    l2_real_slider.style.opacity = 1;
+                    l2_imag_slider.style.opacity = 1;
+                    
+                    // If im1 is 0, im2 must also be 0
+                    l2_imag_slider.value = 0;
+                }
+
+                // Update system
+                updateSystem();
+            }
+
+            // --- Initialization ---
+            caseSelector.addEventListener('change', handleCaseChange);
+            
+            [l1_real_slider, l1_imag_slider, l2_real_slider, l2_imag_slider].forEach(slider => {
+                slider.addEventListener('input', handleSliderInput);
+            });
+            
+            // Set initial state
+            handleCaseChange();
+            
+            // Redraw on resize
+            new ResizeObserver(() => {
+                updateSystem();
+            }).observe(document.body);
+        };
+    </script>
+</body>
+</html>
